@@ -21,7 +21,7 @@ Installation
 Installers for Windows and macOS are available at the `release page
 <https://github.com/DC-analysis/ChipStream/releases>`__.
 
-If you have Python 3 installed, you can install ChipStream with
+If you have Python installed, you can install ChipStream from PyPI
 
 ::
 
@@ -31,6 +31,18 @@ If you have Python 3 installed, you can install ChipStream with
     pip install chipstream[cli]
     # both
     pip install chipstream[cli, gui]
+
+
+Execution
+---------
+If you have installed ChipStream from PyPI, you can start it with
+
+::
+
+    # graphical user interface
+    chipstream-gui
+    # command-line interface
+    chipstream
 
 
 Citing ChipStream
