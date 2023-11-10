@@ -42,7 +42,7 @@ If you have installed ChipStream from PyPI, you can start it with
     # graphical user interface
     chipstream-gui
     # command-line interface
-    chipstream
+    chipstream-cli
 
 
 Citing ChipStream
