@@ -1,0 +1,58 @@
+[build-system]
+# Defined by PEP 518:
+requires = [
+    # for version management
+    "setuptools>=45", "setuptools_scm[toml]>=6.2"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chipstream"
+authors = [
+    # In alphabetical order.
+    {name = "Paul Müller"},
+]
+maintainers = [
+    {name = "Paul Müller", email="dev@craban.de"},
+]
+description = "GUI for DC data postprocessing"
+readme = "README.rst"
+requires-python = ">=3.10, <4"
+keywords = ["RT-DC", "deformability", "cytometry"]
+classifiers = [
+    'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3',
+    'Topic :: Scientific/Engineering :: Visualization',
+    'Intended Audience :: Science/Research',
+]
+license = {text = "GPL version 3.0 or later"}
+dependencies = [
+    "dclab>=0.55.5",
+    "dcnum>=0.12.3",
+    "h5py>=3.0.0, <4",
+    "numpy>=1.21, <2",  # CVE-2021-33430
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+cli = ["click>=8"]
+gui = ["pyqt6"]
+
+[project.scripts]
+chipstream = "chipstream.cli:main"
+
+[project.urls]
+source = "https://github.com/DC-Analysis/ChipStream"
+tracker = "https://github.com/DC-Analysis/ChipStream/issues"
+documentation = "https://chipstream.readthedocs.io/en/stable/"
+changelog = "https://chipstream.readthedocs.io/en/stable/sec_changelog.html"
+
+# We need the following, because automatic package discovery does not work
+# when running cibuildwheel on GitHub Actions (there will be a "wheelhouse"
+# directory).
+[tool.setuptools]
+packages = ["chipstream"]
+
+[tool.setuptools_scm]
+write_to = "chipstream/_version.py"
+version_scheme = "post-release"
