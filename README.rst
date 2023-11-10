@@ -1,5 +1,5 @@
 |ChipStream|
-===========
+============
 
 |PyPI Version| |Build Status| |Coverage Status| |Docs Status|
 
@@ -34,7 +34,7 @@ If you have Python 3 installed, you can install ChipStream with
 
 
 Citing ChipStream
-----------------
+-----------------
 Please cite ChipStream either in-line
 
 ::
