@@ -75,7 +75,7 @@ Testing
     pytest tests
 
 
-.. |ChipStream| image:: https://raw.github.com/DC-analysis/ChipStream/master/docs/logo/chipstream_h50.png
+.. |ChipStream| image:: https://raw.github.com/DC-analysis/ChipStream/master/docs/artwork/chipstream_splash.png
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/ChipStream.svg
    :target: https://pypi.python.org/pypi/ChipStream
 .. |Build Status| image:: https://img.shields.io/github/actions/workflow/status/DC-analysis/ChipStream/check.yml?branch=master
