@@ -25,7 +25,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install setuptools wheel twine
-        pip install .
+        pip install .[cli,gui]
     - name: Build macOS app
       if: runner.os == 'macOS'
       working-directory: ./build-recipes

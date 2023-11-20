@@ -42,7 +42,7 @@ jobs:
         # show installed packages
         pip freeze
     - name: Install extended dependencies
-      if: matrix.deps == "all"
+      if: matrix.deps == 'all'
       run: |
         pip install .[cli,gui]
         pip install -r tests/requirements.txt
@@ -50,7 +50,7 @@ jobs:
       run: |
         flake8 --exclude _version.py .
     - name: Start application and print version
-      if: matrix.deps == "all"
+      if: matrix.deps == 'all'
       env:
         # Display must be available globally for linux to know where xvfb is
         QT_DEBUG_PLUGINS: 1
