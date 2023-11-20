@@ -2,7 +2,7 @@
 from os.path import exists
 import warnings
 
-from mpl_data_cast import __version__ as version
+from chipstream import __version__ as version
 
 NAME = "ChipStream"
 

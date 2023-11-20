@@ -4,7 +4,7 @@ import os.path as op
 import platform
 import sys
 
-import mpl_data_cast
+import chipstream
 
 # make library available
 cdir = op.dirname(op.abspath(__file__))
@@ -12,10 +12,10 @@ pdir = op.dirname(cdir)
 sys.path.insert(0, pdir)
 
 # get version
-version = mpl_data_cast.__version__
+version = chipstream.__version__
 
 # read dummy
-with io.open(op.join(cdir, "win_mpl-data-cast.iss_dummy"), 'r') as dummy:
+with io.open(op.join(cdir, "win_chipstream.iss_dummy"), 'r') as dummy:
     iss = dummy.readlines()
 
 # replace keywords
