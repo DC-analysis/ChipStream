@@ -68,8 +68,9 @@ class ChipStream(QtWidgets.QMainWindow):
 
     def append_paths(self, path_list):
         """Add input paths to the table"""
-        for pp in path_list:
-            self.tableView_input.add_input_path(pp)
+        if not self.manager.is_busy():
+            for pp in path_list:
+                self.tableView_input.add_input_path(pp)
 
     @QtCore.pyqtSlot(QtCore.QEvent)
     def dragEnterEvent(self, e):
@@ -92,6 +93,10 @@ class ChipStream(QtWidgets.QMainWindow):
             elif pp.suffix == ".rtdc":
                 pathlist.append(pp)
         self.append_paths(pathlist)
+
+    def is_running(self):
+        print(self.manager.is_alive())
+        return self.manager.is_alive()
 
     @QtCore.pyqtSlot()
     def on_action_about(self) -> None:
@@ -146,7 +151,7 @@ class ChipStream(QtWidgets.QMainWindow):
         # finished. The user can still add items to the list but not
         # change the pipeline.
         self.widget_options.setEnabled(False)
-        self.manager.start()
+        self.manager.run_all_in_thread()
 
 
 def excepthook(etype, value, trace):
