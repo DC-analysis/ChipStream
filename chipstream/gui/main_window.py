@@ -175,8 +175,14 @@ class ChipStream(QtWidgets.QMainWindow):
             # Display some information in the lower text box.
             info = self.manager.get_info(row)
         # Compare the text to the current text.
-        if info != self.textBrowser.toPlainText():
+        old_text = self.textBrowser.toPlainText()
+        if info != old_text:
+            sb = self.textBrowser.verticalScrollBar()
+            is_at_end = sb.maximum() - sb.value() <= 10
             self.textBrowser.setText(info)
+            if info.strip().startswith(old_text.strip()) and is_at_end:
+                # Automatically scroll to the bottom
+                sb.setValue(sb.maximum())
 
 
 def excepthook(etype, value, trace):
