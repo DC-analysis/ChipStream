@@ -72,6 +72,8 @@ class ProgressModel(QtCore.QAbstractTableModel):
 
 
 class ProgressTable(QtWidgets.QTableView):
+    row_selected = QtCore.pyqtSignal(int)
+
     def __init__(self, *args, **kwargs):
         super(ProgressTable, self).__init__(*args, **kwargs)
         pbar_delegate = ProgressDelegate(self)
@@ -81,8 +83,18 @@ class ProgressTable(QtWidgets.QTableView):
         self.setColumnWidth(0, 400)
         self.setColumnWidth(1, 80)
 
+        # signals
+        self.selectionModel().selectionChanged.connect(
+            self.on_selection_changed)
+
     def add_input_path(self, path):
         self.model.add_input_path(path)
+
+    @QtCore.pyqtSlot()
+    def on_selection_changed(self):
+        """Emit a row-selected signal"""
+        row = self.selectionModel().currentIndex().row()
+        self.row_selected.emit(row)
 
     def update(self):
         self.model.dataChanged.emit()

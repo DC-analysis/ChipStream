@@ -4,6 +4,7 @@ import traceback
 from typing import Dict, List
 import warnings
 
+import dcnum.read
 from dcnum import logic as dclogic
 import h5py
 
@@ -45,6 +46,25 @@ class ChipStreamJobManager:
     def is_busy(self):
         return self.busy_lock.locked()
 
+    def get_info(self, index):
+        try:
+            runner = self.get_runner(index)
+            if runner is None:
+                return "No job information available."
+            if runner.state == "error":
+                return str(runner.error_tb)
+            elif runner.state == "done":
+                with dcnum.read.HDF5Data(runner.job["path_out"]) as hd:
+                    logs = sorted(hd.logs.keys())
+                    logs = [ll for ll in logs if ll.startswith("dcnum-log-")]
+                    return "\n".join(hd.logs[logs[-1]])
+            else:
+                # Open currently running log
+                return runner.path_log.read_text()
+        except BaseException:
+            # Fallback for debugging
+            return traceback.format_exc()
+
     def get_runner(self, index):
         if index >= len(self._runner_list):
             return None
@@ -67,6 +87,7 @@ class ErrorredRunner:
     """Convenience class replacing a high-level failed runner"""
     def __init__(self, error_tb):
         self.error_tb = error_tb
+        self.state = "error"
 
     def get_status(self):
         return {"state": "error",

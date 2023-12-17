@@ -56,6 +56,7 @@ class ChipStream(QtWidgets.QMainWindow):
 
         # Signals
         self.run_completed.connect(self.on_run_completed)
+        self.tableView_input.row_selected.connect(self.on_select_job)
 
         # if "--version" was specified, print the version and exit
         if "--version" in arguments:
@@ -63,6 +64,11 @@ class ChipStream(QtWidgets.QMainWindow):
             QtWidgets.QApplication.processEvents(
                 QtCore.QEventLoop.ProcessEventsFlag.AllEvents, 300)
             sys.exit(0)
+
+        # Create a timer that continuously updates self.textBrowser
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.tableView_input.on_selection_changed)
+        self.timer.start(1000)
 
         # finalize
         self.show()
@@ -160,6 +166,17 @@ class ChipStream(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def on_run_completed(self):
         self.widget_options.setEnabled(True)
+
+    @QtCore.pyqtSlot(int)
+    def on_select_job(self, row):
+        if row < 0:
+            info = "No job selected."
+        else:
+            # Display some information in the lower text box.
+            info = self.manager.get_info(row)
+        # Compare the text to the current text.
+        if info != self.textBrowser.toPlainText():
+            self.textBrowser.setText(info)
 
 
 def excepthook(etype, value, trace):
