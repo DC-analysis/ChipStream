@@ -12,7 +12,7 @@ from .._version import version
 
 
 class ChipStream(QtWidgets.QMainWindow):
-    plots_changed = QtCore.pyqtSignal()
+    run_completed = QtCore.pyqtSignal()
 
     def __init__(self, *arguments):
         """Initialize ChipStream GUI
@@ -53,6 +53,9 @@ class ChipStream(QtWidgets.QMainWindow):
 
         # Command button
         self.commandLinkButton_run.clicked.connect(self.on_run)
+
+        # Signals
+        self.run_completed.connect(self.on_run_completed)
 
         # if "--version" was specified, print the version and exit
         if "--version" in arguments:
@@ -151,7 +154,12 @@ class ChipStream(QtWidgets.QMainWindow):
         # finished. The user can still add items to the list but not
         # change the pipeline.
         self.widget_options.setEnabled(False)
-        self.manager.run_all_in_thread()
+        self.manager.run_all_in_thread(
+            callback_when_done=self.run_completed.emit)
+
+    @QtCore.pyqtSlot()
+    def on_run_completed(self):
+        self.widget_options.setEnabled(True)
 
 
 def excepthook(etype, value, trace):
