@@ -263,13 +263,6 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox_no_basins">
-            <property name="text">
-             <string>Don't use basins (larger, standalone files)</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QComboBox" name="comboBox">
             <property name="enabled">
              <bool>false</bool>
