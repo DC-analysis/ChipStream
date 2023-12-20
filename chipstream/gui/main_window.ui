@@ -356,7 +356,7 @@
   </action>
   <action name="actionClear">
    <property name="text">
-    <string>Clear forms</string>
+    <string>Clear list</string>
    </property>
   </action>
  </widget>

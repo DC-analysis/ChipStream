@@ -43,6 +43,12 @@ class ChipStreamJobManager:
             # Only append paths if we are currently not busy
             self._path_list.append([path, "created"])
 
+    def clear(self):
+        """Clear all data"""
+        self._path_list.clear()
+        self._runner_list.clear()
+        self._worker = None
+
     def is_busy(self):
         return self.busy_lock.locked()
 

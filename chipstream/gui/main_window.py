@@ -59,7 +59,10 @@ class ChipStream(QtWidgets.QMainWindow):
         self.setWindowTitle(f"ChipStream {version}")
         # Disable native menu bar (e.g. on Mac)
         self.menubar.setNativeMenuBar(False)
+
         # File menu
+        self.actionAdd.triggered.connect(self.on_action_add)
+        self.actionClear.triggered.connect(self.on_action_clear)
         self.actionQuit.triggered.connect(self.on_action_quit)
         # Help menu
         self.actionDocumentation.triggered.connect(self.on_action_docs)
@@ -167,6 +170,24 @@ class ChipStream(QtWidgets.QMainWindow):
         QtWidgets.QMessageBox.about(self,
                                     f"ChipStream {version}",
                                     about_text)
+
+    @QtCore.pyqtSlot()
+    def on_action_add(self):
+        """Open dialog to add files and directories"""
+        pathlist, _ = QtWidgets.QFileDialog.getOpenFileNames(
+            self,
+            'Select DC data',
+            '',
+            'RT-DC data (*.rtdc)')
+        if pathlist:
+            # add to list
+            self.append_paths(pathlist)
+
+    @QtCore.pyqtSlot()
+    def on_action_clear(self):
+        """Clear the current table view"""
+        self.manager.clear()
+
 
     @QtCore.pyqtSlot()
     def on_action_docs(self):
