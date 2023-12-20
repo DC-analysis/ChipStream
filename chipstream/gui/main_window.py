@@ -1,11 +1,14 @@
 from importlib import import_module, resources
+import inspect
 import logging
+import multiprocessing as mp
 import pathlib
 import signal
 import sys
 import traceback
 import webbrowser
 
+from dcnum.feat import feat_background
 from PyQt6 import uic, QtCore, QtWidgets
 
 from .._version import version
@@ -28,6 +31,18 @@ class ChipStream(QtWidgets.QMainWindow):
 
         self.logger = logging.getLogger(__name__)
         self.manager = self.tableView_input.model.manager
+
+        # Populate segmenter combobox
+        self.comboBox_segmenter.blockSignals(True)
+        self.comboBox_segmenter.clear()
+        self.comboBox_segmenter.addItem("Disabled (from input file)", "copy")
+        self.comboBox_segmenter.addItem("Threshold-based", "thresh")
+        self.comboBox_segmenter.blockSignals(False)
+        self.comboBox_segmenter.setCurrentIndex(1)
+
+        # Maximum CPU count
+        self.spinBox_procs.setMaximum(mp.cpu_count())
+        self.spinBox_procs.setValue(mp.cpu_count())
 
         # Settings are stored in the .ini file format. Even though
         # `self.settings` may return integer/bool in the same session,
@@ -103,8 +118,38 @@ class ChipStream(QtWidgets.QMainWindow):
                 pathlist.append(pp)
         self.append_paths(pathlist)
 
+    def get_job_kwargs(self):
+        segmenter = self.comboBox_segmenter.currentData()
+        segmenter_kwargs = {}
+        if segmenter == "thresh":
+            segmenter_kwargs["thresh"] = self.spinBox_thresh.value()
+        # default background computer is "sparsemed"
+        bg_default = feat_background.BackgroundSparseMed
+        job_kwargs = {
+            "data_code": "hdf",
+            "data_kwargs": None,
+            "background_code": bg_default.get_ppid_code(),
+            "background_kwargs": inspect.getfullargspec(
+                bg_default.check_user_kwargs).kwonlydefaults,
+            "segmenter_code": segmenter,
+            "segmenter_kwargs": segmenter_kwargs,
+            "feature_code": "legacy",
+            "feature_kwargs": {
+                "brightness": self.checkBox_feat_bright.isChecked(),
+                "haralick": self.checkBox_feat_haralick.isChecked(),
+                },
+            "gate_code": "norm",
+            "gate_kwargs": {},
+            "num_procs": self.spinBox_procs.value(),
+        }
+        # special case for copy-segmenter
+        if segmenter == "copy":
+            job_kwargs["no_basins_in_output"] = \
+                not self.checkBox_basin_based.isChecked()
+
+        return job_kwargs
+
     def is_running(self):
-        print(self.manager.is_alive())
         return self.manager.is_alive()
 
     @QtCore.pyqtSlot()
@@ -161,6 +206,7 @@ class ChipStream(QtWidgets.QMainWindow):
         # change the pipeline.
         self.widget_options.setEnabled(False)
         self.manager.run_all_in_thread(
+            job_kwargs=self.get_job_kwargs(),
             callback_when_done=self.run_completed.emit)
 
     @QtCore.pyqtSlot()
