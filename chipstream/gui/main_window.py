@@ -49,8 +49,7 @@ class ChipStream(QtWidgets.QMainWindow):
         # in the next session, it will reliably return strings. Lists
         # of strings (comma-separated) work nicely though.
         QtCore.QCoreApplication.setOrganizationName("DC-Analysis")
-        QtCore.QCoreApplication.setOrganizationDomain(
-            "https://github.com/DC-analysis")
+        QtCore.QCoreApplication.setOrganizationDomain("mpl.mpg.de")
         QtCore.QCoreApplication.setApplicationName("ChipStream")
         QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
         #: ChipStream settings
