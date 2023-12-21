@@ -187,7 +187,6 @@ class ChipStream(QtWidgets.QMainWindow):
         """Clear the current table view"""
         self.manager.clear()
 
-
     @QtCore.pyqtSlot()
     def on_action_docs(self):
         webbrowser.open("https://chipstream.readthedocs.io")

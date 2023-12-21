@@ -52,6 +52,10 @@ class ChipStreamJobManager:
     def is_busy(self):
         return self.busy_lock.locked()
 
+    def join(self):
+        if self._worker is not None and self._worker.is_alive():
+            self._worker.join()
+
     def get_info(self, index):
         try:
             runner = self.get_runner(index)
