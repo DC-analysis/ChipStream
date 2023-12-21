@@ -59,6 +59,7 @@ jobs:
         QT_DEBUG_PLUGINS: 1
       run: |
         chipstream-gui --version
+        chipstream-cli --version
     - name: Test with pytest
       run: |
          coverage run --source=chipstream -m pytest -x tests
