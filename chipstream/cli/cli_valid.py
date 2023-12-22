@@ -3,6 +3,7 @@ import warnings
 
 from dcnum.meta import ppid
 import dcnum.read
+import h5py
 
 from . import cli_common as cm
 
@@ -44,16 +45,17 @@ def validate_gate_kwargs(args):
 
 
 def validate_pixel_size(data_path):
-    with dcnum.read.HDF5Data(data_path) as hd:
-        did = hd.meta.get("setup:identifier", "EMPTY")
-        pixel_size = hd.h5.attrs.get("imaging:pixel size", 0)
+    with h5py.File(data_path) as h5:
+        did = h5.attrs.get("setup:identifier", "EMPTY")
+        pixel_size = h5.attrs.get("imaging:pixel size", 0)
         if (did.startswith("RC-")
                 and (pixel_size < 0.255 or pixel_size > 0.275)):
+            hd = dcnum.read.HDF5Data(h5, pixel_size=0.260)  # placeholder
             warnings.warn(
                 f"Correcting for invalid pixel size in '{hd.path}'!")
             # Set default pixel size for Rivercyte devices
             # Check the logs for the device name used.
-            logdat = hd.logs.get("cytoshot-acquisition")
+            logdat = hd.logs.get("cytoshot-acquisition", [])
             for line in logdat:
                 line = line.strip().lower()
                 if line.startswith("device name:"):
