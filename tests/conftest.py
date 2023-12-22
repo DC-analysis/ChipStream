@@ -7,7 +7,21 @@ import time
 TMPDIR = tempfile.mkdtemp(prefix=time.strftime(
     "chipstream_test_%H.%M_"))
 
-pytest_plugins = ["pytest-qt"]
+pytest_plugins = []
+
+try:
+    import pytestqt
+except ModuleNotFoundError:
+    pass
+else:
+    pytest_plugins.append("pytest-qt")
+
+try:
+    import pytest_click
+except ModuleNotFoundError:
+    pass
+else:
+    pytest_plugins.append("pytest_click")
 
 
 def pytest_configure(config):

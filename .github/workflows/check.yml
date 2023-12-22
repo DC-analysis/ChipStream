@@ -50,6 +50,7 @@ jobs:
       if: matrix.deps == 'all'
       run: |
         pip install .[cli,gui]
+        pip install -r tests/requirements-full.txt
     - name: Lint with flake8
       run: |
         flake8 --exclude _version.py .
