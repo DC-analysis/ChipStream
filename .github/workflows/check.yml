@@ -71,4 +71,4 @@ jobs:
       if: matrix.deps == 'all' && runner.os == 'macOS'
       working-directory: ./build-recipes
       run: |
-        bash ./macos_build_app.sh ChipStream $(python -m chipstream --version)
+        bash ./macos_build_app.sh ChipStream $(python -c "import chipstream; print(chipstream.__version__)")
