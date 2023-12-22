@@ -10,14 +10,14 @@ TMPDIR = tempfile.mkdtemp(prefix=time.strftime(
 pytest_plugins = []
 
 try:
-    import pytestqt
+    import pytestqt  # noqa: F401
 except ModuleNotFoundError:
     pass
 else:
     pytest_plugins.append("pytest-qt")
 
 try:
-    import pytest_click
+    import pytest_click  # noqa: F401
 except ModuleNotFoundError:
     pass
 else:
