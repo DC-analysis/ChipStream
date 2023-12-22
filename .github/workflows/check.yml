@@ -68,7 +68,7 @@ jobs:
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
     - name: Create app and check if it runs (macOS)
-      if: runner.os == 'macOS'
+      if: matrix.deps == 'all' && runner.os == 'macOS'
       working-directory: ./build-recipes
       run: |
         bash ./macos_build_app.sh ChipStream $(python -m chipstream --version)
