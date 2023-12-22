@@ -13,6 +13,8 @@ from PyQt6 import uic, QtCore, QtWidgets
 
 from .._version import version
 
+from . import splash
+
 
 class ChipStream(QtWidgets.QMainWindow):
     run_completed = QtCore.pyqtSignal()
@@ -86,6 +88,8 @@ class ChipStream(QtWidgets.QMainWindow):
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.tableView_input.on_selection_changed)
         self.timer.start(1000)
+
+        splash.splash_close()
 
         # finalize
         self.show()

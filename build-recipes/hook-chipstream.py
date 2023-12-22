@@ -10,6 +10,19 @@
 # Hook for MPL-Data-Cast
 from PyInstaller.utils.hooks import collect_data_files
 
+hiddenimports = [
+    "chipstream",
+    "chipstream.cli",
+    "chipstream.gui",
+    "dcnum",
+    "dcnum.feat",
+    "dcnum.logic",
+    "dcnum.meta",
+    "dcnum.read",
+    "dcnum.segm",
+    "dcnum.write",
+]
+
 # Data files
 datas = collect_data_files("chipstream", include_py_files=True)
 datas += collect_data_files("chipstream", subdir="gui/img")
