@@ -3,11 +3,12 @@ import h5py
 
 import pytest
 
+from helper_methods import retrieve_data
+
+
 pytest.importorskip("click")
 
-from chipstream.cli import cli_main
-
-from helper_methods import retrieve_data
+from chipstream.cli import cli_main  # noqa: E402
 
 
 def test_cli_set_pixel_size(cli_runner):
