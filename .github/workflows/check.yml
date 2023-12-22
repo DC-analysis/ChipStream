@@ -42,13 +42,13 @@ jobs:
         python -m pip install coverage flake8 pytest
         # install base dependencies
         pip install .
+        pip install -r tests/requirements.txt
         # show installed packages
         pip freeze
     - name: Install extended dependencies
       if: matrix.deps == 'all'
       run: |
         pip install .[cli,gui]
-        pip install -r tests/requirements.txt
     - name: Lint with flake8
       run: |
         flake8 --exclude _version.py .
