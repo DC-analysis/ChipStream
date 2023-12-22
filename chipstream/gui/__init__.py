@@ -23,6 +23,6 @@ else:
         # Use dots as decimal separators
         QtCore.QLocale.setDefault(QtCore.QLocale(QtCore.QLocale.c()))
 
-        window = ChipStream(*sys.argv)  # noqa: F841
+        window = ChipStream(*app.arguments()[1:])  # noqa: F841
 
         sys.exit(app.exec())
