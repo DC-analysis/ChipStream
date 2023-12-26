@@ -21,6 +21,7 @@ hiddenimports = [
     "dcnum.read",
     "dcnum.segm",
     "dcnum.write",
+    "skimage.feature",
 ]
 
 # Data files
