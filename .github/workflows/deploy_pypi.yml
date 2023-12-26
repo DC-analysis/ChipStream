@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-python@v3
 
       - name: Build wheels
-        run: python -m pip wheel --no-deps -w dist
+        run: python -m wheel --no-deps -w dist
 
       - name: publish
         env:
