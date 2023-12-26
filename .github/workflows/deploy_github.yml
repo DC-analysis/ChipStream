@@ -37,7 +37,10 @@ jobs:
       working-directory: ./build-recipes
       run: |
         pip install -r win_build_requirements.txt
-        pyinstaller -y --log-level=DEBUG win_ChipStream.spec
+        pyinstaller -y --log-level=WARN win_ChipStream.spec
+        dir
+        dir dist
+        dir dist\\ChipStream
         # Run the binary (the most simple test)
         dist\\ChipStream\\ChipStream.exe --version
         python win_make_iss.py

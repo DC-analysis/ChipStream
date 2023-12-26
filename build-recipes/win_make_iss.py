@@ -28,5 +28,5 @@ for i in range(len(iss)):
             platform.architecture()[0])
 
 # write iss
-with io.open(op.join(cdir, "win_mpl-data-cast.iss"), 'w') as issfile:
+with io.open(op.join(cdir, "win_chipstream.iss"), 'w') as issfile:
     issfile.writelines(iss)
