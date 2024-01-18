@@ -36,9 +36,9 @@ def format_help_class_method_info(info_list):
     """Format a list of `info` dictionaries from `get_class_method_info`"""
     choices = ["\b"]  # "\b" means paragraph is not formatted in help string
     for info in info_list:
-        key = info["key"]
+        code = info["code"]
         title = info["title"]
-        choices.append(f" - '{key}': {title}")
+        choices.append(f" - '{code}': {title}")
         for mname in info.get("defaults", []):
             # We are flattening through all methods, because the CLI
             # makes them transparently available. There must not be
