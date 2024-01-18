@@ -1,6 +1,7 @@
 0.2.0
  - feat: allow to select pixel size in GUI (#4)
  - ref: support latest dcnum version
+ - ci: do not build mac app during checks
 0.1.9
   - initial pre-release
 0.0.1

@@ -67,8 +67,3 @@ jobs:
          coverage run --source=chipstream -m pytest -x tests
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
-    - name: Create app and check if it runs (macOS)
-      if: matrix.deps == 'all' && runner.os == 'macOS'
-      working-directory: ./build-recipes
-      run: |
-        bash ./macos_build_app.sh ChipStream $(python -c "import chipstream; print(chipstream.__version__)")
