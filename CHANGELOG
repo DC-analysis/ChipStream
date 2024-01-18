@@ -1,4 +1,5 @@
 0.2.0
+ - feat: allow to select pixel size in GUI
  - ref: support latest dcnum version
 0.1.9
   - initial pre-release

@@ -234,6 +234,39 @@
             </property>
            </widget>
           </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QCheckBox" name="checkBox_pixel_size">
+              <property name="text">
+               <string>Set global pixel size</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QDoubleSpinBox" name="doubleSpinBox_pixel_size">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="decimals">
+               <number>5</number>
+              </property>
+              <property name="minimum">
+               <double>0.100000000000000</double>
+              </property>
+              <property name="maximum">
+               <double>0.950000000000000</double>
+              </property>
+              <property name="value">
+               <double>0.267500000000000</double>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
          </layout>
         </widget>
        </item>
@@ -382,6 +415,22 @@
     <hint type="destinationlabel">
      <x>1052</x>
      <y>312</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_pixel_size</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>doubleSpinBox_pixel_size</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1149</x>
+     <y>547</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1310</x>
+     <y>547</y>
     </hint>
    </hints>
   </connection>

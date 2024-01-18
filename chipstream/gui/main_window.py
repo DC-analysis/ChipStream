@@ -125,15 +125,24 @@ class ChipStream(QtWidgets.QMainWindow):
         self.append_paths(pathlist)
 
     def get_job_kwargs(self):
+        # did the user select a pixel size?
+        if self.checkBox_pixel_size.isChecked():
+            data_kwargs = {"pixel_size": self.doubleSpinBox_pixel_size.value()}
+        else:
+            data_kwargs = None
+
+        # default background computer is "sparsemed"
+        bg_default = feat_background.BackgroundSparseMed
+
+        # populate segmenter and its kwargs
         segmenter = self.comboBox_segmenter.currentData()
         segmenter_kwargs = {}
         if segmenter == "thresh":
             segmenter_kwargs["thresh"] = self.spinBox_thresh.value()
-        # default background computer is "sparsemed"
-        bg_default = feat_background.BackgroundSparseMed
+
         job_kwargs = {
             "data_code": "hdf",
-            "data_kwargs": None,
+            "data_kwargs": data_kwargs,
             "background_code": bg_default.get_ppid_code(),
             "background_kwargs": inspect.getfullargspec(
                 bg_default.check_user_kwargs).kwonlydefaults,
@@ -148,6 +157,7 @@ class ChipStream(QtWidgets.QMainWindow):
             "gate_kwargs": {},
             "num_procs": self.spinBox_procs.value(),
         }
+
         # special case for copy-segmenter
         if segmenter == "copy":
             job_kwargs["no_basins_in_output"] = \
@@ -224,6 +234,7 @@ class ChipStream(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def on_run(self):
+        """Run the analysis"""
         # When we start running, we disable all the controls until we are
         # finished. The user can still add items to the list but not
         # change the pipeline.
