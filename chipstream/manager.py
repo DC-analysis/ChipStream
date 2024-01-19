@@ -142,7 +142,9 @@ class ChipStreamJobManager:
         self._worker.start()
 
     def set_output_path(self, path_out):
-        self._path_out = pathlib.Path(path_out)
+        if path_out is not None:
+            path_out = pathlib.Path(path_out)
+        self._path_out = path_out
 
 
 class ErrorredRunner:
