@@ -296,13 +296,10 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBox">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
+           <widget class="QComboBox" name="comboBox_output">
             <item>
              <property name="text">
-              <string>Output to input directory</string>
+              <string>Output alongside input files</string>
              </property>
             </item>
             <item>

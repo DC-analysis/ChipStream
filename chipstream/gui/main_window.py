@@ -1,3 +1,4 @@
+import atexit
 from importlib import import_module, resources
 import inspect
 import logging
@@ -10,7 +11,9 @@ import webbrowser
 
 from dcnum.feat import feat_background
 from PyQt6 import uic, QtCore, QtWidgets
+from PyQt6.QtCore import QStandardPaths
 
+from ..path_cache import PathCache
 from .._version import version
 
 from . import splash
@@ -72,6 +75,20 @@ class ChipStream(QtWidgets.QMainWindow):
 
         # Command button
         self.commandLinkButton_run.clicked.connect(self.on_run)
+
+        # Path selection
+        cache_loc = pathlib.Path(
+            QStandardPaths.writableLocation(
+                QStandardPaths.StandardLocation.CacheLocation))
+        cache_loc.mkdir(parents=True, exist_ok=True)
+        self.path_cache = PathCache(cache_loc / "output_paths.txt")
+        atexit.register(self.path_cache.cleanup)
+        self.comboBox_output.clear()
+        self.comboBox_output.addItem("Output alongside input files", "input")
+        for ii, path in enumerate(self.path_cache):
+            self.comboBox_output.addItem(str(path), ii)
+        self.comboBox_output.addItem("Select output directory", "new")
+        self.comboBox_output.currentIndexChanged.connect(self.on_path_out)
 
         # Signals
         self.run_completed.connect(self.on_run_completed)
@@ -231,6 +248,41 @@ class ChipStream(QtWidgets.QMainWindow):
     def on_action_quit(self) -> None:
         """Determine what happens when the user wants to quit"""
         QtCore.QCoreApplication.quit()
+
+    @QtCore.pyqtSlot()
+    def on_path_out(self):
+        data = self.comboBox_output.currentData()
+        if data == "input":
+            # Store output data alongside input data
+            self.manager.set_output_path(None)
+        elif data == "new":
+            # New output path
+            default = "." if len(self.path_cache) == 0 else self.path_cache[-1]
+            # Open a directory selection dialog
+            path = QtWidgets.QFileDialog.getExistingDirectory(
+                self,
+                "Choose data output directory",
+                str(default),
+            )
+            self.comboBox_output.blockSignals(True)
+            if path and pathlib.Path(path).exists():
+                self.comboBox_output.insertItem(
+                    len(self.path_cache) + 1,  # index in combobox
+                    path,
+                    len(self.path_cache),  # user data == index in path_cache
+                    )
+                self.comboBox_output.setCurrentIndex(len(self.path_cache) + 1)
+                self.path_cache.add_path(pathlib.Path(path))
+                self.manager.set_output_path(path)
+            else:
+                # User pressed cancel
+                self.comboBox_output.setCurrentIndex(0)
+                self.manager.set_output_path(None)
+            self.comboBox_output.blockSignals(False)
+        else:
+            # Data is an integer index for `self.path_cache`
+            self.manager.set_output_path(self.path_cache[data])
+        print(self.manager._path_out)
 
     @QtCore.pyqtSlot()
     def on_run(self):

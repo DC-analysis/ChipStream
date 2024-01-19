@@ -1,6 +1,7 @@
 0.2.0
- - feat: allow to select pixel size in GUI (#4)
- - feat: introduce PathCache for rememering previous output directories
+ - feat: allow to specify an output directory in the GUI (#3)
+ - feat: allow to select the pixel size in the GUI (#4)
+ - feat: introduce PathCache for remembering previous output directories
  - ref: support latest dcnum version
  - ci: do not build mac app during checks
 0.1.9
