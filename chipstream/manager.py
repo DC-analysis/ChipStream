@@ -47,7 +47,7 @@ class ChipStreamJobManager:
     def add_path(self, path):
         if not self.is_busy():
             # Only append paths if we are currently not busy
-            self._path_in_list.append([path, "created"])
+            self._path_in_list.append([pathlib.Path(path), "created"])
 
     def clear(self):
         """Clear all data"""
