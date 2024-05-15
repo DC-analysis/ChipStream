@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1408</width>
-    <height>754</height>
+    <width>1120</width>
+    <height>680</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -123,6 +123,25 @@
         </spacer>
        </item>
        <item>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="title">
+          <string>Background Image</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QCheckBox" name="checkBox_bg_flickering">
+            <property name="text">
+             <string>flickering correction</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="groupBox_4">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -234,6 +253,16 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="checkBox_feat_volume">
+            <property name="text">
+             <string>Volume</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QCheckBox" name="checkBox_feat_haralick">
             <property name="text">
              <string>Haralick texture features</string>
@@ -335,7 +364,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1408</width>
+     <width>1120</width>
      <height>22</height>
     </rect>
    </property>

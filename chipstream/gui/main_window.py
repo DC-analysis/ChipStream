@@ -150,6 +150,10 @@ class ChipStream(QtWidgets.QMainWindow):
 
         # default background computer is "sparsemed"
         bg_default = feat_background.BackgroundSparseMed
+        bg_kwargs = inspect.getfullargspec(
+            bg_default.check_user_kwargs).kwonlydefaults
+        bg_kwargs["offset_correction"] = \
+            self.checkBox_bg_flickering.isChecked()
 
         # populate segmenter and its kwargs
         segmenter = self.comboBox_segmenter.currentData()
@@ -161,14 +165,14 @@ class ChipStream(QtWidgets.QMainWindow):
             "data_code": "hdf",
             "data_kwargs": data_kwargs,
             "background_code": bg_default.get_ppid_code(),
-            "background_kwargs": inspect.getfullargspec(
-                bg_default.check_user_kwargs).kwonlydefaults,
+            "background_kwargs": bg_kwargs,
             "segmenter_code": segmenter,
             "segmenter_kwargs": segmenter_kwargs,
             "feature_code": "legacy",
             "feature_kwargs": {
                 "brightness": self.checkBox_feat_bright.isChecked(),
                 "haralick": self.checkBox_feat_haralick.isChecked(),
+                "volume": self.checkBox_feat_volume.isChecked(),
                 },
             "gate_code": "norm",
             "gate_kwargs": {},
