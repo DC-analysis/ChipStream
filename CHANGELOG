@@ -1,8 +1,11 @@
+0.3.0
+ - BREAKING CHANGE: major changes in dcnum postprocessing
+ - setup: bump dcnum from 0.17.2 to 0.18.0
 0.2.2
  - maintenance release
 0.2.1
  - fix: cast string to paths when adding a new path to the manager (#6)
- - setup: bump dcnum from 0.16.8 to 0 17.2
+ - setup: bump dcnum from 0.16.8 to 0.17.2
 0.2.0
  - feat: allow to specify an output directory in the GUI (#3)
  - feat: allow to select the pixel size in the GUI (#4)

@@ -80,11 +80,11 @@ def test_manager_run_defaults():
     assert mg.current_index == 0
     assert not mg.is_busy()
     # default pipeline may change in dcnum
-    assert mg.get_runner(0).ppid == ("7|"
+    assert mg.get_runner(0).ppid == ("8|"
                                      "hdf:p=0.2645|"
-                                     "sparsemed:k=200^s=1^t=0^f=0.8|"
+                                     "sparsemed:k=200^s=1^t=0^f=0.8^o=1|"
                                      "thresh:t=-6:cle=1^f=1^clo=2|"
-                                     "legacy:b=1^h=1|"
+                                     "legacy:b=1^h=1^v=1|"
                                      "norm:o=0^s=10")
 
 
