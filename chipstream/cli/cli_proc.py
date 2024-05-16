@@ -10,14 +10,16 @@ import dcnum.read
 
 from . import cli_common as cm
 from .cli_valid import (
-    validate_feature_kwargs, validate_gate_kwargs, validate_pixel_size,
-    validate_segmentation_kwargs
+    validate_background_kwargs, validate_feature_kwargs, validate_gate_kwargs,
+    validate_pixel_size, validate_segmentation_kwargs
 )
 
 
 def process_dataset(
     path_in: pathlib.Path,
     path_out: pathlib.Path,
+    background_method: str,
+    background_kwargs: List[str],
     segmentation_method: str,
     segmentation_kwargs: List[str],
     feature_kwargs: List[str],
@@ -42,9 +44,10 @@ def process_dataset(
     click.echo(f"Data ID:\t{dat_id}")
 
     # background keyword arguments
-    bg_cls = cm.bg_methods["sparsemed"]
-    bg_kwargs = {}  # use defaults
-    bg_id = bg_cls.get_ppid_from_ppkw(bg_kwargs)  # use defaults
+    bg_kwargs = validate_background_kwargs(background_method,
+                                           background_kwargs)
+    bg_cls = cm.bg_methods[background_method]
+    bg_id = bg_cls.get_ppid_from_ppkw(bg_kwargs)
     click.echo(f"Background ID:\t{bg_id}")
 
     # segmenter keyword arguments

@@ -62,6 +62,17 @@ Recursively analyze a directory containing .rtdc and .avi files::
                                 resolve_path=True,
                                 path_type=pathlib.Path),
                 )
+@click.option("-b", "--background-method",
+              type=click.Choice(sorted(cm.bg_methods.keys()),
+                                case_sensitive=False),
+              default="sparsemed",
+              help="Background computation method to use.")
+@click.option("-kb", "background_kwargs",
+              multiple=True,
+              help="Optional ``KEY=VALUE`` argument for the specified "
+                   "background method",
+              metavar="KEY=VALUE",
+              )
 @click.option("-s", "--segmentation-method",
               type=click.Choice(sorted(cm.seg_methods.keys()),
                                 case_sensitive=False),
@@ -104,6 +115,8 @@ Recursively analyze a directory containing .rtdc and .avi files::
 def chipstream_cli(
     path_in,
     path_out=None,
+    background_method="sparsemed",
+    background_kwargs=None,
     segmentation_method="thresh",
     segmentation_kwargs=None,
     feature_kwargs=None,
@@ -131,6 +144,8 @@ def chipstream_cli(
     mp.freeze_support()
 
     process_kwargs = dict(
+        background_method=background_method,
+        background_kwargs=background_kwargs,
         segmentation_method=segmentation_method,
         segmentation_kwargs=segmentation_kwargs,
         feature_kwargs=feature_kwargs,

@@ -2,6 +2,7 @@
  - BREAKING CHANGE: major changes in dcnum postprocessing
  - feat: allow to select whether volume should be computed
  - feat: allow to select whether flickering correction should be done
+ - enh: expose background computation parameters in CLI
  - ref: move `manager` module to `gui` module
  - setup: bump dcnum from 0.17.2 to 0.18.0
 0.2.2

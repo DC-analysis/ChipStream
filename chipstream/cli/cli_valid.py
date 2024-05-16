@@ -8,6 +8,24 @@ import h5py
 from . import cli_common as cm
 
 
+def validate_background_kwargs(bg_method, args):
+    """Parse background keyword arguments"""
+    # Get list of valid keyword arguments
+    bg_cls = cm.bg_methods[bg_method]
+    spec = inspect.getfullargspec(bg_cls.check_user_kwargs)
+    valid_kw = spec.kwonlyargs
+    annot = spec.annotations
+    # Convert the input args to key-value pairs
+    kwargs = {}
+    for key, value in [a.split("=") for a in args]:
+        if key not in valid_kw:
+            raise ValueError(f"Invalid keyword '{key}' for {bg_method}. "
+                             + f"Allowed keywords are {valid_kw}!")
+        # Convert to correct dtype (default to string)
+        kwargs[key] = ppid.convert_to_dtype(value, annot[key])
+    return kwargs
+
+
 def validate_feature_kwargs(args):
     # Get list of valid keyword arguments
     feat_cls = cm.QueueEventExtractor
