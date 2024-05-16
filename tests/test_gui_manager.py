@@ -1,6 +1,6 @@
 import shutil
 
-from chipstream import manager
+from chipstream.gui import manager
 
 
 from helper_methods import retrieve_data

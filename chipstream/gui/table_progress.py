@@ -1,6 +1,6 @@
 from PyQt6 import QtCore, QtWidgets
 
-from ..manager import ChipStreamJobManager
+from .manager import ChipStreamJobManager
 
 
 ItemProgressRole = QtCore.Qt.ItemDataRole.UserRole + 1001
