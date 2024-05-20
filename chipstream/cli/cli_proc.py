@@ -26,6 +26,7 @@ def process_dataset(
     gate_kwargs: List[str],
     pixel_size: float,
     # Below this line are arguments that do not affect the pipeline ID
+    index_mapping: int | slice | None,
     num_cpus: int,
     dry_run: bool,
     debug: bool,
@@ -87,7 +88,8 @@ def process_dataset(
         path_in=path_in,
         path_out=path_out,
         data_code="hdf",
-        data_kwargs={"pixel_size": pixel_size},
+        data_kwargs={"pixel_size": pixel_size,
+                     "index_mapping": index_mapping},
         background_code=bg_cls.get_ppid_code(),
         background_kwargs=bg_kwargs,
         segmenter_code=seg_cls.get_ppid_code(),

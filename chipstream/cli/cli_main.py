@@ -98,6 +98,12 @@ Recursively analyze a directory containing .rtdc and .avi files::
 @click.option("-p", "--pixel-size", type=float, default=0,
               help="Set/override the pixel size for feature "
                    "extraction [µm].")
+@click.option("--limit-events", type=str, default="0",
+              help="Limit events of events to analyze. This can be either "
+                   "a number (e.g. '5000') or a range (e.g. '5000-7000'). "
+                   "You can also specify a step size (e.g. '5000-7000-2' for "
+                   "every second event). The convention follows Python slices "
+                   "with 'n' substituting for 'None'.")
 @click.option("-r", "--recursive", is_flag=True,
               help="Recurse into subdirectories.")
 @click.option("--num-cpus",
@@ -122,6 +128,7 @@ def chipstream_cli(
     feature_kwargs=None,
     gate_kwargs=None,
     pixel_size=0,
+    limit_events="0",
     recursive=False,
     num_cpus=None,
     dry_run=False,
@@ -133,6 +140,23 @@ def chipstream_cli(
         click.secho("Running in debug mode (this will be slow)",
                     fg="yellow")
         verbose = True
+
+    # Parse limit_frames to get the HDF5Data index_mapping
+
+    if limit_events == "0":
+        index_mapping = None
+    elif limit_events.count("-"):
+        vals = limit_events.split("-")
+        assert len(vals) in [2, 3], "slice definition must have length 2 or 3"
+        start = None if vals[0] == "n" else int(vals[0])
+        stop = None if vals[1] == "n" else int(vals[1])
+        if len(vals) == 3:
+            step = None if vals[2] == "n" else int(vals[2])
+        else:
+            step = None
+        index_mapping = slice(start, stop, step)
+    else:
+        index_mapping = int(limit_events)
 
     # Tell the root logger to pretty-print logs
     root_logger = logging.getLogger()
@@ -152,6 +176,7 @@ def chipstream_cli(
         gate_kwargs=gate_kwargs,
         pixel_size=pixel_size,
         # Below this line are arguments that do not define the pipeline ID
+        index_mapping=index_mapping,
         num_cpus=num_cpus or mp.cpu_count(),
         dry_run=dry_run,
         debug=debug,
