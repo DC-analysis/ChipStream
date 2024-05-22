@@ -37,7 +37,7 @@ def test_gui_basic(mw):
     # Just check some known properties in the UI.
     assert mw.spinBox_thresh.value() == -6
     assert mw.checkBox_feat_bright.isChecked()
-    assert len(mw.manager) == 0
+    assert len(mw.job_manager) == 0
 
 
 @pytest.mark.parametrize("correct_offset", [True, False])
@@ -49,7 +49,7 @@ def test_gui_correct_offset(mw, correct_offset):
     mw.checkBox_bg_flickering.setChecked(correct_offset)
     mw.doubleSpinBox_pixel_size.setValue(0.666)
     mw.on_run()
-    while mw.manager.is_busy():
+    while mw.job_manager.is_busy():
         time.sleep(.1)
     out_path = path.with_name(path.stem + "_dcn.rtdc")
     assert out_path.exists()
@@ -68,7 +68,7 @@ def test_gui_set_pixel_size(mw):
     mw.checkBox_pixel_size.setChecked(True)
     mw.doubleSpinBox_pixel_size.setValue(0.666)
     mw.on_run()
-    while mw.manager.is_busy():
+    while mw.job_manager.is_busy():
         time.sleep(.1)
     out_path = path.with_name(path.stem + "_dcn.rtdc")
     assert out_path.exists()
@@ -88,7 +88,7 @@ def test_gui_use_volume(mw, use_volume):
     mw.checkBox_feat_volume.setChecked(use_volume)
     mw.doubleSpinBox_pixel_size.setValue(0.666)
     mw.on_run()
-    while mw.manager.is_busy():
+    while mw.job_manager.is_busy():
         time.sleep(.1)
     out_path = path.with_name(path.stem + "_dcn.rtdc")
     assert out_path.exists()

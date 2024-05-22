@@ -16,6 +16,7 @@ from PyQt6.QtCore import QStandardPaths
 from ..path_cache import PathCache
 from .._version import version
 
+from .manager import ChipStreamJobManager
 from . import splash
 
 
@@ -29,13 +30,15 @@ class ChipStream(QtWidgets.QMainWindow):
         application will print the version after initialization
         and exit.
         """
+        self.job_manager = ChipStreamJobManager()
         QtWidgets.QMainWindow.__init__(self)
         ref_ui = resources.files("chipstream.gui") / "main_window.ui"
         with resources.as_file(ref_ui) as path_ui:
             uic.loadUi(path_ui, self)
 
+        self.tableWidget_input.set_job_manager(self.job_manager)
+
         self.logger = logging.getLogger(__name__)
-        self.manager = self.tableView_input.model.manager
 
         # Populate segmenter combobox
         self.comboBox_segmenter.blockSignals(True)
@@ -92,7 +95,7 @@ class ChipStream(QtWidgets.QMainWindow):
 
         # Signals
         self.run_completed.connect(self.on_run_completed)
-        self.tableView_input.row_selected.connect(self.on_select_job)
+        self.tableWidget_input.row_selected.connect(self.on_select_job)
 
         # if "--version" was specified, print the version and exit
         if "--version" in arguments:
@@ -103,7 +106,7 @@ class ChipStream(QtWidgets.QMainWindow):
 
         # Create a timer that continuously updates self.textBrowser
         self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.tableView_input.on_selection_changed)
+        self.timer.timeout.connect(self.tableWidget_input.on_selection_changed)
         self.timer.start(1000)
 
         splash.splash_close()
@@ -115,9 +118,10 @@ class ChipStream(QtWidgets.QMainWindow):
 
     def append_paths(self, path_list):
         """Add input paths to the table"""
-        if not self.manager.is_busy():
+        if not self.job_manager.is_busy():
             for pp in path_list:
-                self.tableView_input.add_input_path(pp)
+                self.job_manager.add_path(pp)
+            self.tableWidget_input.update_from_job_manager()
 
     @QtCore.pyqtSlot(QtCore.QEvent)
     def dragEnterEvent(self, e):
@@ -187,7 +191,7 @@ class ChipStream(QtWidgets.QMainWindow):
         return job_kwargs
 
     def is_running(self):
-        return self.manager.is_alive()
+        return self.job_manager.is_busy()
 
     @QtCore.pyqtSlot()
     def on_action_about(self) -> None:
@@ -220,7 +224,8 @@ class ChipStream(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def on_action_clear(self):
         """Clear the current table view"""
-        self.manager.clear()
+        self.job_manager.clear()
+        self.tableWidget_input.update_from_job_manager()
 
     @QtCore.pyqtSlot()
     def on_action_docs(self):
@@ -258,7 +263,7 @@ class ChipStream(QtWidgets.QMainWindow):
         data = self.comboBox_output.currentData()
         if data == "input":
             # Store output data alongside input data
-            self.manager.set_output_path(None)
+            self.job_manager.set_output_path(None)
         elif data == "new":
             # New output path
             default = "." if len(self.path_cache) == 0 else self.path_cache[-1]
@@ -277,16 +282,15 @@ class ChipStream(QtWidgets.QMainWindow):
                     )
                 self.comboBox_output.setCurrentIndex(len(self.path_cache) + 1)
                 self.path_cache.add_path(pathlib.Path(path))
-                self.manager.set_output_path(path)
+                self.job_manager.set_output_path(path)
             else:
                 # User pressed cancel
                 self.comboBox_output.setCurrentIndex(0)
-                self.manager.set_output_path(None)
+                self.job_manager.set_output_path(None)
             self.comboBox_output.blockSignals(False)
         else:
             # Data is an integer index for `self.path_cache`
-            self.manager.set_output_path(self.path_cache[data])
-        print(self.manager._path_out)
+            self.job_manager.set_output_path(self.path_cache[data])
 
     @QtCore.pyqtSlot()
     def on_run(self):
@@ -295,7 +299,7 @@ class ChipStream(QtWidgets.QMainWindow):
         # finished. The user can still add items to the list but not
         # change the pipeline.
         self.widget_options.setEnabled(False)
-        self.manager.run_all_in_thread(
+        self.job_manager.run_all_in_thread(
             job_kwargs=self.get_job_kwargs(),
             callback_when_done=self.run_completed.emit)
 
@@ -309,7 +313,7 @@ class ChipStream(QtWidgets.QMainWindow):
             info = "No job selected."
         else:
             # Display some information in the lower text box.
-            info = self.manager.get_info(row)
+            info = self.job_manager.get_info(row)
         # Compare the text to the current text.
         old_text = self.textBrowser.toPlainText()
         if info != old_text:

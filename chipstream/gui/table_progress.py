@@ -1,100 +1,83 @@
 from PyQt6 import QtCore, QtWidgets
 
-from .manager import ChipStreamJobManager
 
-
-ItemProgressRole = QtCore.Qt.ItemDataRole.UserRole + 1001
-
-
-class ProgressDelegate(QtWidgets.QStyledItemDelegate):
-    def paint(self, painter, option, index):
-        progress = index.data(ItemProgressRole)
-        opt = QtWidgets.QStyleOptionProgressBar()
-        opt.rect = option.rect
-        opt.minimum = 0
-        opt.maximum = 100
-        opt.progress = int(progress * 100)
-        opt.text = f"{progress:.1%}"
-        opt.textVisible = True
-        QtWidgets.QApplication.style().drawControl(
-            QtWidgets.QStyle.ControlElement.CE_ProgressBar, opt, painter)
-
-
-class ProgressModel(QtCore.QAbstractTableModel):
-    def __init__(self, *args, **kwargs):
-        super(ProgressModel, self).__init__(*args, **kwargs)
-        self.manager = ChipStreamJobManager()
-        self.map_columns = ["path", "state", "progress"]
-        self.headers = [m.capitalize() for m in self.map_columns]
-        self.monitor_timer = QtCore.QTimer(self)
-        self.monitor_timer.timeout.connect(self.monitor_current_job)
-        self.monitor_timer.start(300)
-
-    def add_input_path(self, path):
-        self.manager.add_path(path)
-        self.layoutChanged.emit()
-
-    def data(self, index, role):
-        status = self.manager[index.row()]
-        key = self.map_columns[index.column()]
-        if role in [ItemProgressRole, QtCore.Qt.ItemDataRole.DisplayRole]:
-            return status[key]
-        else:
-            return QtCore.QVariant()
-
-    def columnCount(self, parent):
-        return len(self.headers)
-
-    def headerData(self, section, orientation, role):
-        if role != QtCore.Qt.ItemDataRole.DisplayRole:
-            return QtCore.QVariant()
-        return self.headers[section]
-
-    def rowCount(self, parent):
-        return len(self.manager)
-
-    @QtCore.pyqtSlot()
-    def monitor_current_job(self):
-        current_index = self.manager.current_index
-        if current_index is not None:
-            self.update_index(current_index)
-
-    @QtCore.pyqtSlot(int)
-    def update_index(self, index):
-        # update the row
-        index_1 = self.index(index, 0)
-        index_2 = self.index(index, len(self.headers))
-        self.dataChanged.emit(index_1,
-                              index_2,
-                              [QtCore.Qt.ItemDataRole.DisplayRole,
-                               QtCore.Qt.ItemDataRole.DisplayRole,
-                               ItemProgressRole])
-
-
-class ProgressTable(QtWidgets.QTableView):
+class ProgressTable(QtWidgets.QTableWidget):
     row_selected = QtCore.pyqtSignal(int)
 
     def __init__(self, *args, **kwargs):
         super(ProgressTable, self).__init__(*args, **kwargs)
-        pbar_delegate = ProgressDelegate(self)
-        self.setItemDelegateForColumn(2, pbar_delegate)
-        self.model = ProgressModel()
-        self.setModel(self.model)
-        self.setColumnWidth(0, 400)
-        self.setColumnWidth(1, 80)
+        self.job_manager = None
 
         # signals
-        self.selectionModel().selectionChanged.connect(
+        self.itemSelectionChanged.connect(
             self.on_selection_changed)
 
-    def add_input_path(self, path):
-        self.model.add_input_path(path)
+        # timer for updating table contents
+        self.monitor_timer = QtCore.QTimer(self)
+        self.monitor_timer.timeout.connect(
+            self.update_from_job_manager_progress)
+        self.monitor_timer.start(300)
 
     @QtCore.pyqtSlot()
     def on_selection_changed(self):
         """Emit a row-selected signal"""
-        row = self.selectionModel().currentIndex().row()
+        row = self.currentIndex().row()
         self.row_selected.emit(row)
 
-    def update(self):
-        self.model.dataChanged.emit()
+    def set_job_manager(self, job_manager):
+        if self.job_manager is None:
+            self.job_manager = job_manager
+        else:
+            raise ValueError("Job manager already set!")
+
+    def set_item_label(self, row, col, label, align=None):
+        """Get/Create a Qlabel at the specified position
+        """
+        label = f"{label}"
+        item = self.item(row, col)
+        if item is None:
+            item = QtWidgets.QTableWidgetItem(label)
+            self.setItem(row, col, item)
+            if align is not None:
+                item.setTextAlignment(align)
+        else:
+            if item.text() != label:
+                item.setText(label)
+
+    def set_item_progress(self, row, col, progress):
+        """Get/Create a QProgressBar at the specified position
+        """
+        pb = self.cellWidget(row, col)
+        if pb is None:
+            pb = QtWidgets.QProgressBar(self)
+            pb.setMaximum(1000)
+            self.setCellWidget(row, col, pb)
+        else:
+            if pb.value() != int(progress*1000):
+                pb.setValue(int(progress*1000))
+
+    @QtCore.pyqtSlot()
+    def update_from_job_manager(self):
+        if self.job_manager is None:
+            raise ValueError("Job manager not set!")
+        self.setRowCount(len(self.job_manager))
+        # Check rows and populate new items
+        for ii in range(len(self.job_manager)):
+            status = self.job_manager[ii]
+            self.set_item_label(ii, 0, str(status["path"]))
+            self.set_item_label(ii, 1, str(status["state"]),
+                                align=QtCore.Qt.AlignmentFlag.AlignCenter)
+            self.set_item_progress(ii, 2, status["progress"])
+        # Set path column width to something large (does not work during init)
+        if self.columnWidth(0) == 100:
+            self.setColumnWidth(0, 500)
+
+    @QtCore.pyqtSlot()
+    def update_from_job_manager_progress(self):
+        for ii in range(len(self.job_manager)):
+            st = self.item(ii, 1)
+            st.setText(self.job_manager[ii]["state"])
+            pb = self.cellWidget(ii, 2)
+            progress = self.job_manager[ii]["progress"]
+            if pb is not None and pb.value() != int(progress*1000):
+                pb.setValue(int(progress*1000))

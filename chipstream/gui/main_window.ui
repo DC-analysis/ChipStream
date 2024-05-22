@@ -41,15 +41,18 @@
         <property name="orientation">
          <enum>Qt::Vertical</enum>
         </property>
-        <widget class="ProgressTable" name="tableView_input">
+        <widget class="ProgressTable" name="tableWidget_input">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
            <horstretch>1</horstretch>
            <verstretch>3</verstretch>
           </sizepolicy>
          </property>
+         <property name="editTriggers">
+          <set>QAbstractItemView::NoEditTriggers</set>
+         </property>
          <property name="dragDropMode">
-          <enum>QAbstractItemView::InternalMove</enum>
+          <enum>QAbstractItemView::NoDragDrop</enum>
          </property>
          <property name="alternatingRowColors">
           <bool>true</bool>
@@ -60,6 +63,12 @@
          <property name="selectionBehavior">
           <enum>QAbstractItemView::SelectRows</enum>
          </property>
+         <property name="textElideMode">
+          <enum>Qt::ElideMiddle</enum>
+         </property>
+         <property name="horizontalScrollMode">
+          <enum>QAbstractItemView::ScrollPerPixel</enum>
+         </property>
          <property name="sortingEnabled">
           <bool>true</bool>
          </property>
@@ -67,14 +76,32 @@
           <bool>false</bool>
          </property>
          <attribute name="horizontalHeaderMinimumSectionSize">
-          <number>50</number>
+          <number>100</number>
+         </attribute>
+         <attribute name="horizontalHeaderDefaultSectionSize">
+          <number>100</number>
+         </attribute>
+         <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+          <bool>false</bool>
          </attribute>
          <attribute name="horizontalHeaderStretchLastSection">
           <bool>true</bool>
          </attribute>
-         <attribute name="verticalHeaderVisible">
-          <bool>false</bool>
-         </attribute>
+         <column>
+          <property name="text">
+           <string>Path</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>State</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Progress</string>
+          </property>
+         </column>
         </widget>
         <widget class="QTextBrowser" name="textBrowser">
          <property name="sizePolicy">
@@ -428,7 +455,7 @@
  <customwidgets>
   <customwidget>
    <class>ProgressTable</class>
-   <extends>QTableView</extends>
+   <extends>QTableWidget</extends>
    <header>chipstream.gui.table_progress</header>
   </customwidget>
  </customwidgets>
