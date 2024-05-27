@@ -40,7 +40,9 @@ def process_dataset(
     path_out.parent.mkdir(parents=True, exist_ok=True)
 
     # data keyword arguments
-    with dcnum.read.HDF5Data(path_in, pixel_size=pixel_size) as data:
+    data_kwargs = {"pixel_size": pixel_size,
+                   "index_mapping": index_mapping}
+    with dcnum.read.HDF5Data(path_in, **data_kwargs) as data:
         dat_id = data.get_ppid()
     click.echo(f"Data ID:\t{dat_id}")
 
@@ -88,8 +90,7 @@ def process_dataset(
         path_in=path_in,
         path_out=path_out,
         data_code="hdf",
-        data_kwargs={"pixel_size": pixel_size,
-                     "index_mapping": index_mapping},
+        data_kwargs=data_kwargs,
         background_code=bg_cls.get_ppid_code(),
         background_kwargs=bg_kwargs,
         segmenter_code=seg_cls.get_ppid_code(),
@@ -98,7 +99,7 @@ def process_dataset(
         feature_kwargs=feat_kwargs,
         gate_code=gate_cls.get_ppid_code(),
         gate_kwargs=gate_kwargs,
-        no_basins_in_output=True,
+        basin_strategy="drain",
         num_procs=num_cpus,
         debug=debug,
     )

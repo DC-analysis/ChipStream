@@ -1,5 +1,6 @@
 import dcnum.read
 import h5py
+import numpy as np
 
 import pytest
 
@@ -32,8 +33,12 @@ def test_cli_limit_events(cli_runner, limit_events, dcnum_yield,
 
     # sanity check
     with h5py.File(path) as h5:
-        assert h5["events/frame"][0] == 1
-        assert h5["events/frame"][1] == 2
+        assert np.all(h5["events/frame"][:]
+                      == np.array([1,  2,  2,  4,  4,  5,  5,  5,  6,  6,
+                                   6,  7,  8,  8, 10, 10, 11, 11, 11, 12,
+                                   12, 12, 13, 14, 14, 16, 16, 17, 17, 17,
+                                   18, 18, 18]))
+        assert "basinmap0" not in h5
 
     path_out = path.with_name("limited_events.rtdc")
     result = cli_runner.invoke(cli_main.chipstream_cli,
