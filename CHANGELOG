@@ -6,6 +6,7 @@
    "Exploit basins" checkbox
  - fix: show correct data PPID in CLI
  - setup: bump dcnum from 0.19.1 to 0.20.1
+ - docs: add tool tips for most controls
 0.3.1
  - ref: migrate from QTableView to QTableWidget (issues with Windows 11)
 0.3.0
