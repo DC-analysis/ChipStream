@@ -40,6 +40,28 @@ def test_gui_basic(mw):
     assert len(mw.job_manager) == 0
 
 
+@pytest.mark.parametrize("use_basins", [True, False])
+def test_gui_basins(mw, use_basins):
+    path = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    mw.append_paths([path])
+    mw.checkBox_basins.setChecked(use_basins)
+    mw.on_run()
+    while mw.job_manager.is_busy():
+        time.sleep(.1)
+    out_path = path.with_name(path.stem + "_dcn.rtdc")
+    assert out_path.exists()
+
+    with h5py.File(out_path) as h5:
+        for feat in ["image", "frame"]:
+            if not use_basins:
+                assert feat in h5["events"]
+            else:
+                assert feat not in h5["events"]
+        for feat in ["mask", "deform", "aspect"]:
+            assert feat in h5["events"]
+
+
 @pytest.mark.parametrize("correct_offset", [True, False])
 def test_gui_correct_offset(mw, correct_offset):
     path = retrieve_data(

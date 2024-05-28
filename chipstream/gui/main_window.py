@@ -180,6 +180,8 @@ class ChipStream(QtWidgets.QMainWindow):
                 },
             "gate_code": "norm",
             "gate_kwargs": {},
+            "basin_strategy":
+                "tap" if self.checkBox_basins.isChecked() else "drain",
             "num_procs": self.spinBox_procs.value(),
         }
 

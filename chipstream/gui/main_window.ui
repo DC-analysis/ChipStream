@@ -157,6 +157,9 @@
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
            <widget class="QCheckBox" name="checkBox_bg_flickering">
+            <property name="toolTip">
+             <string/>
+            </property>
             <property name="text">
              <string>flickering correction</string>
             </property>
@@ -369,6 +372,19 @@
               <string>Select output path...</string>
              </property>
             </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="checkBox_basins">
+            <property name="toolTip">
+             <string>Produce smaller output files faster by referring to the input data via basins</string>
+            </property>
+            <property name="text">
+             <string>Exploit basins</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
          </layout>

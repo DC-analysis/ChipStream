@@ -2,6 +2,8 @@
  - feat: CLI by default creates output file that contains no redundant
    data and uses the input file as a basin; old behavior can be brought
    back with the "--drain-basins" command-line option
+ - feat: implement same behavior for GUI as for CLI, with the
+   "Exploit basins" checkbox
  - fix: show correct data PPID in CLI
  - setup: bump dcnum from 0.19.1 to 0.20.1
 0.3.1
