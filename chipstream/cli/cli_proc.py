@@ -1,6 +1,6 @@
 import pathlib
 import time
-from typing import List
+from typing import List, Literal
 
 import click
 import dcnum.logic
@@ -25,8 +25,9 @@ def process_dataset(
     feature_kwargs: List[str],
     gate_kwargs: List[str],
     pixel_size: float,
-    # Below this line are arguments that do not affect the pipeline ID
     index_mapping: int | slice | None,
+    # Below this line are arguments that do not affect the pipeline ID
+    basin_strategy: Literal["drain", "tap"],
     num_cpus: int,
     dry_run: bool,
     debug: bool,
@@ -99,7 +100,7 @@ def process_dataset(
         feature_kwargs=feat_kwargs,
         gate_code=gate_cls.get_ppid_code(),
         gate_kwargs=gate_kwargs,
-        basin_strategy="drain",
+        basin_strategy=basin_strategy,
         num_procs=num_cpus,
         debug=debug,
     )

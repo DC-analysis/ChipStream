@@ -12,6 +12,39 @@ pytest.importorskip("click")
 from chipstream.cli import cli_main  # noqa: E402
 
 
+@pytest.mark.parametrize("drain", [True, False])
+def test_cli_basins(cli_runner, drain):
+    path_temp = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    path = path_temp.with_name("input_path.rtdc")
+
+    # create a test file for more than 100 events
+    with dcnum.read.concatenated_hdf5_data(
+        paths=3*[path_temp],
+        path_out=path,
+            compute_frame=True):
+        pass
+
+    path_out = path.with_name("with_pixel_size_dcn.rtdc")
+    args = [str(path),
+            str(path_out),
+            "-s", "thresh",
+            ]
+    if drain:
+        args.append("--drain-basins")
+    result = cli_runner.invoke(cli_main.chipstream_cli, args)
+    assert result.exit_code == 0
+
+    with h5py.File(path_out) as h5:
+        for feat in ["image", "frame"]:
+            if drain:
+                assert feat in h5["events"]
+            else:
+                assert feat not in h5["events"]
+        for feat in ["mask", "deform", "aspect"]:
+            assert feat in h5["events"]
+
+
 @pytest.mark.parametrize("limit_events,dcnum_mapping,dcnum_yield,f0", [
     # this is the default
     ["0", "0", 36, 1],
@@ -46,6 +79,7 @@ def test_cli_limit_events(cli_runner, limit_events, dcnum_yield,
                                 str(path_out),
                                 "-s", "thresh",
                                 "--limit-events", limit_events,
+                                "--drain-basins",
                                 ])
     assert result.exit_code == 0
 

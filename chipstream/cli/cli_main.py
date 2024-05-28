@@ -104,6 +104,10 @@ Recursively analyze a directory containing .rtdc and .avi files::
                    "You can also specify a step size (e.g. '5000-7000-2' for "
                    "every second event). The convention follows Python slices "
                    "with 'n' substituting for 'None'.")
+@click.option("--drain-basins", type=str, is_flag=True,
+              help="Write all basin features from input to output file. This "
+                   "option trades computation time and small file size for "
+                   "an output file that contains all available features.")
 @click.option("-r", "--recursive", is_flag=True,
               help="Recurse into subdirectories.")
 @click.option("--num-cpus",
@@ -129,6 +133,7 @@ def chipstream_cli(
     gate_kwargs=None,
     pixel_size=0,
     limit_events="0",
+    drain_basins=False,
     recursive=False,
     num_cpus=None,
     dry_run=False,
@@ -142,7 +147,6 @@ def chipstream_cli(
         verbose = True
 
     # Parse limit_frames to get the HDF5Data index_mapping
-
     if limit_events == "0":
         index_mapping = None
     elif limit_events.count("-"):
@@ -175,8 +179,9 @@ def chipstream_cli(
         feature_kwargs=feature_kwargs,
         gate_kwargs=gate_kwargs,
         pixel_size=pixel_size,
-        # Below this line are arguments that do not define the pipeline ID
         index_mapping=index_mapping,
+        # Below this line are arguments that do not define the pipeline ID
+        basin_strategy="drain" if drain_basins else "tap",
         num_cpus=num_cpus or mp.cpu_count(),
         dry_run=dry_run,
         debug=debug,
