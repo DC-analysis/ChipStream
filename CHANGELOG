@@ -1,3 +1,5 @@
+0.4.1
+ - enh: make chipstream.gui and chipstream.cli executable as a package
 0.4.0
  - feat: CLI by default creates output file that contains no redundant
    data and uses the input file as a basin; old behavior can be brought
