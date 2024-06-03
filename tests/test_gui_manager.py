@@ -1,5 +1,7 @@
 import shutil
 
+from dcnum.meta import ppid
+
 from chipstream.gui import manager
 
 
@@ -80,7 +82,7 @@ def test_manager_run_defaults():
     assert mg.current_index == 0
     assert not mg.is_busy()
     # default pipeline may change in dcnum
-    assert mg.get_runner(0).ppid == ("8|"
+    assert mg.get_runner(0).ppid == (f"{ppid.DCNUM_PPID_GENERATION}|"
                                      "hdf:p=0.2645^i=0|"
                                      "sparsemed:k=200^s=1^t=0^f=0.8^o=1|"
                                      "thresh:t=-6:cle=1^f=1^clo=2|"
