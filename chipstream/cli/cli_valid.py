@@ -98,8 +98,8 @@ def validate_segmentation_kwargs(seg_method, args):
     """Parse segmenter keyword arguments"""
     # Get list of valid keyword arguments
     seg_cls = cm.seg_methods[seg_method]
-    # segment_approach
-    spec_appr = inspect.getfullargspec(seg_cls.segment_approach)
+    # segment_algorithm
+    spec_appr = inspect.getfullargspec(seg_cls.segment_algorithm)
     valid_kw_appr = spec_appr.kwonlyargs
     annot_appr = spec_appr.annotations
     # process_mask
