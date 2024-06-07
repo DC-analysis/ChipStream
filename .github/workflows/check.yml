@@ -51,7 +51,7 @@ jobs:
     - name: Install extended dependencies
       if: matrix.deps == 'all'
       run: |
-        pip install .[cli,gui]
+        pip install .[cli,gui,torch]
         pip install -r tests/requirements-full.txt
     - name: Lint with flake8
       run: |
