@@ -68,7 +68,7 @@ def process_dataset(
         click.secho(f"Segmenter '{segmentation_method}' cannot be applied "
                     f"to '{path_in}': {', '.join(e.reasons_list)}",
                     fg="red")
-        return
+        return 1
     seg_id = seg_cls.get_ppid_from_ppkw(seg_kwargs)
     click.echo(f"Segmenter ID:\t{seg_id}")
 

@@ -4,7 +4,7 @@ import numpy as np
 
 import pytest
 
-from helper_methods import retrieve_data
+from helper_methods import retrieve_data, retrieve_model
 
 
 pytest.importorskip("click")
@@ -146,3 +146,60 @@ def test_cli_set_background(cli_runner, method, kwarg, ppid):
 
     with h5py.File(path_out) as h5:
         assert h5.attrs["pipeline:dcnum background"] == ppid
+
+
+def test_cli_torchmpo(cli_runner):
+    mpath = retrieve_model("segm-torch-model_unet-dcnum-test_g1_910c2.zip")
+    path_temp = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    path = path_temp.with_name("input_path.rtdc")
+
+    # create a test file for more than 100 events
+    with dcnum.read.concatenated_hdf5_data(
+        paths=3*[path_temp],
+        path_out=path,
+            compute_frame=True):
+        pass
+
+    path_out = path.with_name("output.rtdc")
+    result = cli_runner.invoke(cli_main.chipstream_cli,
+                               [str(path),
+                                str(path_out),
+                                "-s", "torchmpo",
+                                "-ks", f"model_file={mpath}",
+                                ])
+    assert result.exit_code == 0
+
+    with h5py.File(path_out) as h5:
+        assert h5.attrs["pipeline:dcnum segmenter"] \
+               == "torchmpo:m=unet-dcnum-test_g1_910c2.dcnm:cle=1^f=1^clo=0"
+        assert np.sum(np.array(h5["events/mask"][2], dtype=bool)) == 828
+        assert np.allclose(h5["events/area_um"][10], 56.17808075)
+
+
+def test_cli_torchmpo_wrong_model(cli_runner):
+    mpath = retrieve_model("segm-torch-model_unet-dcnum-test_g1_910c2.zip")
+    path_temp = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    path = path_temp.with_name("input_path.rtdc")
+
+    # create a test file for more than 100 events
+    with dcnum.read.concatenated_hdf5_data(
+        paths=3*[path_temp],
+        path_out=path,
+            compute_frame=True):
+        pass
+
+    # change the region to reservoir, so the model will fail
+    with h5py.File(path, "a") as h5:
+        h5.attrs["setup:chip region"] = "reservoir"
+
+    path_out = path.with_name("output.rtdc")
+    result = cli_runner.invoke(cli_main.chipstream_cli,
+                               [str(path),
+                                str(path_out),
+                                "-s", "torchmpo",
+                                "-ks", f"model_file={mpath}",
+                                ])
+    assert result.exit_code == 1
+    assert result.stdout.count("only experiments in channel region supported")
