@@ -10,12 +10,15 @@ import traceback
 import webbrowser
 
 from dcnum.feat import feat_background
+from dcnum.meta import paths as dcnum_paths
+from dcnum.segm import get_available_segmenters
 from PyQt6 import uic, QtCore, QtWidgets
 from PyQt6.QtCore import QStandardPaths
 
 from ..path_cache import PathCache
 from .._version import version
 
+from .dlg_model_props import TorchModelProperties
 from .manager import ChipStreamJobManager
 from . import splash
 
@@ -36,22 +39,6 @@ class ChipStream(QtWidgets.QMainWindow):
         with resources.as_file(ref_ui) as path_ui:
             uic.loadUi(path_ui, self)
 
-        self.tableWidget_input.set_job_manager(self.job_manager)
-
-        self.logger = logging.getLogger(__name__)
-
-        # Populate segmenter combobox
-        self.comboBox_segmenter.blockSignals(True)
-        self.comboBox_segmenter.clear()
-        self.comboBox_segmenter.addItem("Disabled (from input file)", "copy")
-        self.comboBox_segmenter.addItem("Threshold-based", "thresh")
-        self.comboBox_segmenter.blockSignals(False)
-        self.comboBox_segmenter.setCurrentIndex(1)
-
-        # Maximum CPU count
-        self.spinBox_procs.setMaximum(mp.cpu_count())
-        self.spinBox_procs.setValue(mp.cpu_count())
-
         # Settings are stored in the .ini file format. Even though
         # `self.settings` may return integer/bool in the same session,
         # in the next session, it will reliably return strings. Lists
@@ -62,6 +49,53 @@ class ChipStream(QtWidgets.QMainWindow):
         QtCore.QSettings.setDefaultFormat(QtCore.QSettings.Format.IniFormat)
         #: ChipStream settings
         self.settings = QtCore.QSettings()
+
+        # register search paths with dcnum
+        for path in self.settings.value("segm/torch_model_files", []):
+            path = pathlib.Path(path)
+            if path.is_dir():
+                dcnum_paths.register_search_path("torch_model_files", path)
+
+        self.tableWidget_input.set_job_manager(self.job_manager)
+
+        self.logger = logging.getLogger(__name__)
+
+        # Populate segmenter combobox
+        self.comboBox_segmenter.blockSignals(True)
+        self.comboBox_segmenter.clear()
+        # copy
+        self.comboBox_segmenter.addItem("Disabled (from input file)", "copy")
+        # thresh
+        self.comboBox_segmenter.addItem("Thresholding", "thresh")
+        # torch
+        self.comboBox_segmenter.addItem("Machine-learning model", "torch")
+        self.checkBox_torch_use_gpu.setVisible(
+            "torchsto" in get_available_segmenters())
+        available_models = []
+        for pdir in dcnum_paths.search_path_registry.get("torch_model_files",
+                                                         []):
+            available_models += [p for p in pdir.glob("*.dcnm")]
+        available_models = sorted(set(available_models))
+        if available_models:
+            self.comboBox_torch_model.clear()
+            self.comboBox_torch_model.setEnabled(True)
+            self.toolButton_torch_info.setEnabled(True)
+            for mpath in available_models:
+                self.comboBox_torch_model.addItem(mpath.stem, mpath)
+            default_segmenter = "torch"
+        else:
+            default_segmenter = "thresh"
+        self.toolButton_torch_add.clicked.connect(self.on_torch_model_add)
+        self.toolButton_torch_info.clicked.connect(self.on_torch_model_info)
+
+        self.comboBox_segmenter.blockSignals(False)
+        self.comboBox_segmenter.setCurrentIndex(
+            self.comboBox_segmenter.findData(default_segmenter))
+
+        # Maximum CPU count
+        self.spinBox_procs.setMaximum(mp.cpu_count())
+        self.spinBox_procs.setValue(mp.cpu_count())
+
         # GUI
         self.setWindowTitle(f"ChipStream {version}")
         # Disable native menu bar (e.g. on Mac)
@@ -164,6 +198,13 @@ class ChipStream(QtWidgets.QMainWindow):
         segmenter_kwargs = {}
         if segmenter == "thresh":
             segmenter_kwargs["thresh"] = self.spinBox_thresh.value()
+        elif segmenter == "torch":
+            if self.checkBox_torch_use_gpu.isChecked():
+                segmenter = "torchsto"
+            else:
+                segmenter = "torchmpo"
+            segmenter_kwargs["model_file"] = \
+                self.comboBox_torch_model.currentData()
 
         job_kwargs = {
             "data_code": "hdf",
@@ -184,11 +225,6 @@ class ChipStream(QtWidgets.QMainWindow):
                 "tap" if self.checkBox_basins.isChecked() else "drain",
             "num_procs": self.spinBox_procs.value(),
         }
-
-        # special case for copy-segmenter
-        if segmenter == "copy":
-            job_kwargs["no_basins_in_output"] = \
-                not self.checkBox_basin_based.isChecked()
 
         return job_kwargs
 
@@ -325,6 +361,36 @@ class ChipStream(QtWidgets.QMainWindow):
             if info.strip().startswith(old_text.strip()) and is_at_end:
                 # Automatically scroll to the bottom
                 sb.setValue(sb.maximum())
+
+    @QtCore.pyqtSlot()
+    def on_torch_model_add(self):
+        """Ask the user for a path to a .dcnm file and remember it"""
+        pathlist, _ = QtWidgets.QFileDialog.getOpenFileNames(
+            self,
+            'Select segmentation model files',
+            '',
+            'Model files (*.dcnm)')
+        cur_mod_paths = self.settings.value("segm/torch_model_files", [])
+        for path in pathlist:
+            path = pathlib.Path(path)
+            dcnum_paths.register_search_path("torch_model_files",
+                                             path.parent)
+            cur_mod_paths.append(str(path.parent))
+            if not self.comboBox_torch_model.isEnabled():
+                self.comboBox_torch_model.clear()
+            self.comboBox_torch_model.addItem(path.stem, path)
+            self.comboBox_torch_model.setEnabled(True)
+            self.toolButton_torch_info.setEnabled(True)
+        cur_mod_paths = sorted(set(cur_mod_paths))
+        if cur_mod_paths:
+            self.settings.setValue("segm/torch_model_files", cur_mod_paths)
+
+    @QtCore.pyqtSlot()
+    def on_torch_model_info(self):
+        """Show the user model-related information"""
+        model_file = self.comboBox_torch_model.currentData()
+        dlg = TorchModelProperties(self, model_file)
+        dlg.exec()
 
 
 def excepthook(etype, value, trace):

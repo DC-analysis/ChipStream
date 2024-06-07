@@ -1,5 +1,6 @@
 0.6.0
  - feat: implement segmenter validation step in CLI
+ - feat: support PyTorch segmentation models
  - fix: show correct default mask postprocessing arguments in CLI help
  - setup: bump dcnum from 0.22.1 to 0.23.0
 0.5.0
