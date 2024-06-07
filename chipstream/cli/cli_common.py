@@ -85,7 +85,11 @@ def get_choices_help_string_segmenter(class_dict):
     for key in class_dict:
         class_obj = class_dict[key]
         static_kw_methods = ["segment_algorithm"]
+        static_kw_defaults = {}
         if class_obj.mask_postprocessing:
             static_kw_methods.append("process_mask")
-        info_list.append(get_class_method_info(class_obj, static_kw_methods))
+            static_kw_defaults["process_mask"] = class_obj.mask_default_kwargs
+        info_list.append(get_class_method_info(class_obj,
+                                               static_kw_methods,
+                                               static_kw_defaults))
     return format_help_class_method_info(info_list)
