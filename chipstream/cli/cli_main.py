@@ -45,7 +45,7 @@ Process an .rtdc measurement, without computing the Haralick texture features::
 
  chipstream-cli process -kf haralick=False M001_data.rtdc
 
-Recursively analyze a directory containing .rtdc and .avi files::
+Recursively analyze a directory containing .rtdc files::
 
  chipstream-cli process --recursive directory_name
 
