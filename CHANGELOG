@@ -1,3 +1,6 @@
+0.6.0
+ - feat: implement segmenter validation step in CLI
+ - setup: bump dcnum from 0.22.1 to 0.23.0
 0.5.0
  - setup: bump dcnum from 0.20.1 to 0.22.1
 0.4.1

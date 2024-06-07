@@ -6,6 +6,7 @@ import click
 import dcnum.logic
 from dcnum.meta import ppid
 import dcnum.read
+import dcnum.segm
 
 
 from . import cli_common as cm
@@ -45,6 +46,8 @@ def process_dataset(
                    "index_mapping": index_mapping}
     with dcnum.read.HDF5Data(path_in, **data_kwargs) as data:
         dat_id = data.get_ppid()
+        validation_kwargs = {"meta": data.meta,
+                             "logs": data.logs}
     click.echo(f"Data ID:\t{dat_id}")
 
     # background keyword arguments
@@ -58,6 +61,14 @@ def process_dataset(
     seg_kwargs = validate_segmentation_kwargs(segmentation_method,
                                               segmentation_kwargs)
     seg_cls = cm.seg_methods[segmentation_method]
+    try:
+        seg_cls.validate_applicability(segmenter_kwargs=seg_kwargs,
+                                       **validation_kwargs)
+    except dcnum.segm.SegmenterNotApplicableError as e:
+        click.secho(f"Segmenter '{segmentation_method}' cannot be applied "
+                    f"to '{path_in}': {', '.join(e.reasons_list)}",
+                    fg="red")
+        return
     seg_id = seg_cls.get_ppid_from_ppkw(seg_kwargs)
     click.echo(f"Segmenter ID:\t{seg_id}")
 
