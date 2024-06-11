@@ -4,7 +4,7 @@ import h5py
 import numpy as np
 import pytest
 
-from helper_methods import retrieve_data
+from helper_methods import retrieve_data, retrieve_model
 
 pytest.importorskip("PyQt6")
 
@@ -81,6 +81,45 @@ def test_gui_correct_offset(mw, correct_offset):
                            0.666,
                            atol=0, rtol=1e-5)
         assert ("bg_off" in h5["events"]) == correct_offset
+
+
+def test_gui_segm_torch_model(mw, qtbot, monkeypatch):
+    path = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    path_model = retrieve_model(
+        "segm-torch-model_unet-dcnum-test_g1_910c2.zip")
+
+    # Import the model
+    monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileNames",
+                        lambda *args: ([path_model], ""))
+    qtbot.mouseClick(mw.toolButton_torch_add, QtCore.Qt.MouseButton.LeftButton)
+    # select the model
+    for idm in range(mw.comboBox_torch_model.count()):
+        data = mw.comboBox_torch_model.itemData(idm)
+        if data.name == path_model.name:
+            break
+    else:
+        assert False
+
+    mw.comboBox_torch_model.setCurrentIndex(idm)
+
+    # Add the input file
+    mw.append_paths([path])
+
+    # Run the analysis
+    mw.on_run()
+    while mw.job_manager.is_busy():
+        time.sleep(.1)
+    out_path = path.with_name(path.stem + "_dcn.rtdc")
+    assert out_path.exists()
+
+    with h5py.File(out_path) as h5:
+        # test feature availability
+        for feat in ["mask", "deform", "aspect"]:
+            assert feat in h5["events"]
+        # test metadata
+        assert h5.attrs["pipeline:dcnum segmenter"] \
+               == f"torchmpo:m={path_model.name}:cle=1^f=1^clo=0"
 
 
 def test_gui_set_pixel_size(mw):
