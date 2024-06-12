@@ -122,6 +122,48 @@ def test_gui_segm_torch_model(mw, qtbot, monkeypatch):
                == f"torchmpo:m={path_model.name}:cle=1^f=1^clo=0"
 
 
+def test_gui_segm_torch_model_with_wrong_model(mw, qtbot, monkeypatch):
+    # Create a test dataset with metadata that will make the model invalid
+    path = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+
+    with h5py.File(path, "a") as h5:
+        h5.attrs["setup:chip region"] = "reservoir"
+
+    path_model = retrieve_model(
+        "segm-torch-model_unet-dcnum-test_g1_910c2.zip")
+
+    # Import the model
+    monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileNames",
+                        lambda *args: ([path_model], ""))
+    qtbot.mouseClick(mw.toolButton_torch_add, QtCore.Qt.MouseButton.LeftButton)
+    # select the model
+    for idm in range(mw.comboBox_torch_model.count()):
+        data = mw.comboBox_torch_model.itemData(idm)
+        if data.name == path_model.name:
+            break
+    else:
+        assert False
+
+    mw.comboBox_torch_model.setCurrentIndex(idm)
+
+    # Add the input file
+    mw.append_paths([path])
+
+    # Run the analysis
+    mw.on_run()
+    while mw.job_manager.is_busy():
+        time.sleep(.1)
+    out_path = path.with_name(path.stem + "_dcn.rtdc")
+    assert not out_path.exists()
+
+    # Make sure there is an error message in the interface
+    qtbot.mouseClick(mw.tableWidget_input.cellWidget(0, 2),
+                     QtCore.Qt.MouseButton.LeftButton)
+    assert mw.textBrowser.toPlainText().count(
+        "only experiments in channel region supported")
+
+
 def test_gui_set_pixel_size(mw):
     path = retrieve_data(
         "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")

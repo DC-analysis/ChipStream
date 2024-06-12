@@ -4,8 +4,9 @@ from dcnum.meta import ppid
 
 from chipstream.gui import manager
 
+import h5py
 
-from helper_methods import retrieve_data
+from helper_methods import retrieve_data, retrieve_model
 
 
 def test_manager_get_paths_out(tmp_path):
@@ -88,6 +89,35 @@ def test_manager_run_defaults():
                                      "thresh:t=-6:cle=1^f=1^clo=2|"
                                      "legacy:b=1^h=1^v=1|"
                                      "norm:o=0^s=10")
+
+
+def test_manager_run_error_wrong_model():
+    model_file = retrieve_model(
+        "segm-torch-model_unet-dcnum-test_g1_910c2.zip")
+
+    # Create a test dataset with metadata that will make the model invalid
+    path = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+
+    with h5py.File(path, "a") as h5:
+        h5.attrs["setup:chip region"] = "reservoir"
+
+    mg = manager.ChipStreamJobManager()
+    mg.add_path(path)
+    mg.run_all_in_thread(job_kwargs={
+        "segmenter_code": "torchmpo",
+        "segmenter_kwargs": {"model_file": model_file}
+        }
+    )
+    # wait for the thread to join
+    mg.join()
+
+    assert mg.current_index == 0
+    assert mg[0]["progress"] == 0
+    assert mg[0]["state"] == "error"
+    assert mg.get_info(0).count("only experiments in channel region supported")
+
+    assert not mg.is_busy()
 
 
 def test_manager_run_with_path_out(tmp_path):

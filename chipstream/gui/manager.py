@@ -222,6 +222,9 @@ class JobWorker(threading.Thread):
                                        path_out=path_out,
                                        **self.job_kwargs)
         self.jobs.append(job)
+        # Make sure the job will run (This must be done after adding it
+        # to the jobs list and before adding it to the runners list)
+        job.validate()
         with dclogic.DCNumJobRunner(job) as runner:
             self.runners.append(runner)
             # We might encounter a scenario in which the output file
