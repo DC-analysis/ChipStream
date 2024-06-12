@@ -84,6 +84,7 @@ def test_gui_correct_offset(mw, correct_offset):
 
 
 def test_gui_segm_torch_model(mw, qtbot, monkeypatch):
+    pytest.importorskip("torch")
     path = retrieve_data(
         "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
     path_model = retrieve_model(

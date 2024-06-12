@@ -1,5 +1,7 @@
 import shutil
 
+import pytest
+
 from dcnum.meta import ppid
 
 from chipstream.gui import manager
@@ -92,6 +94,7 @@ def test_manager_run_defaults():
 
 
 def test_manager_run_error_wrong_model():
+    pytest.importorskip("torch")
     model_file = retrieve_model(
         "segm-torch-model_unet-dcnum-test_g1_910c2.zip")
 
