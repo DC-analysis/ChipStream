@@ -34,7 +34,7 @@ jobs:
         pip install mahotas==1.4.13
         pip install .[cli,gui]
         # Install CPU versions of torch (smaller file size)
-        pip install torch==2.3.1+cpu torchvision==0.18.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
+        pip install torch==2.3.1 torchvision==0.18.1 -f https://download.pytorch.org/whl/cpu/torch/
     - name: Build macOS app
       if: runner.os == 'macOS'
       working-directory: ./build-recipes
