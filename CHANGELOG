@@ -2,7 +2,7 @@
  - feat: implement segmenter validation step in CLI and GUI
  - feat: support PyTorch segmentation models
  - fix: show correct default mask postprocessing arguments in CLI help
- - setup: bump dcnum from 0.22.1 to 0.24.0
+ - setup: bump dcnum from 0.22.1 to 0.24.0 (internal basins)
  - setup: change required pytorch version from 2.3 to 2.2 (hardware support)
 0.5.0
  - setup: bump dcnum from 0.20.1 to 0.22.1
