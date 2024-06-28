@@ -13,4 +13,4 @@ def splash_close():
         if pyi_splash.is_alive():
             pyi_splash.close()
 
-    os.environ["_PYIBoot_SPLASH"] = "disabled_with_warning"
+    os.environ["_PYIBoot_SPLASH"] = "handled"
