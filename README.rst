@@ -30,7 +30,7 @@ If you have Python installed, you can install ChipStream from PyPI
     # command-line interface
     pip install chipstream[cli]
     # both
-    pip install chipstream[cli, gui]
+    pip install chipstream[cli,gui]
 
 
 Execution
