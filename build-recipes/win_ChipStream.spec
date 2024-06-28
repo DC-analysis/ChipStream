@@ -60,7 +60,7 @@ gui_exe = EXE(
       strip=False,
       upx=False,
       icon=NAME + ".ico",
-      console=bool(chipstream.__version__.count("post")))
+      console=bool(chipstream.__version__.count("post") or chipstream.__version__.count("a")))
 
 coll = COLLECT(
     cli_exe,

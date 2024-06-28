@@ -33,6 +33,22 @@ If you have Python installed, you can install ChipStream from PyPI
     pip install chipstream[cli,gui]
 
 
+Since version 0.6.0, you can also make use of torch-based segmentation
+models.
+
+::
+
+    pip install chipstream[cli,gui,torch]
+
+If you have a CUDA-compatible GPU and your Python installation cannot access the
+GPU (`torch.cuda.is_available()` is `False`), installing torch via the pytorch
+index URL might help:
+
+::
+
+    pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+
+
 Execution
 ---------
 If you have installed ChipStream from PyPI, you can start it with
