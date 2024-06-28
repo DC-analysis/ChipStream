@@ -44,6 +44,7 @@ jobs:
       if: runner.os == 'windows'
       working-directory: ./build-recipes
       run: |
+        pip install https://github.com/paulmueller/pyinstaller/archive/splash_disable_on_subprocess.zip
         pip install -r win_build_requirements.txt
         pyinstaller -y --log-level=WARN win_ChipStream.spec
         dir
