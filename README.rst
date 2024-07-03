@@ -41,8 +41,10 @@ models.
     pip install chipstream[cli,gui,torch]
 
 If you have a CUDA-compatible GPU and your Python installation cannot access the
-GPU (`torch.cuda.is_available()` is `False`), installing torch via the pytorch
-index URL might help:
+GPU (`torch.cuda.is_available()` is `False`), please use the installation
+instructions from pytorch (https://pytorch.org/get-started/locally/). For
+instance, if you have CUDA 12.1, you can install torch with this pytorch.org
+index URL:
 
 ::
 
