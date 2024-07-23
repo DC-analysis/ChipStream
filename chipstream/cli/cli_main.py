@@ -65,7 +65,7 @@ Recursively analyze a directory containing .rtdc files::
 @click.option("-b", "--background-method",
               type=click.Choice(sorted(cm.bg_methods.keys()),
                                 case_sensitive=False),
-              default="sparsemed",
+              default="sparsemed", show_default=True,
               help="Background computation method to use.")
 @click.option("-kb", "background_kwargs",
               multiple=True,
@@ -76,7 +76,7 @@ Recursively analyze a directory containing .rtdc files::
 @click.option("-s", "--segmentation-method",
               type=click.Choice(sorted(cm.seg_methods.keys()),
                                 case_sensitive=False),
-              default="thresh",
+              default="thresh", show_default=True,
               help="Segmentation method to use.")
 @click.option("-ks", "segmentation_kwargs",
               multiple=True,
@@ -104,7 +104,7 @@ Recursively analyze a directory containing .rtdc files::
                    "You can also specify a step size (e.g. '5000-7000-2' for "
                    "every second event). The convention follows Python slices "
                    "with 'n' substituting for 'None'.")
-@click.option("--drain-basins", type=str, is_flag=True,
+@click.option("--drain-basins", is_flag=True,
               help="Write all basin features from input to output file. This "
                    "option trades computation time and small file size for "
                    "an output file that contains all available features.")
