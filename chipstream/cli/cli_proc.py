@@ -51,6 +51,14 @@ def process_dataset(
     # background keyword arguments
     bg_kwargs = validate_background_kwargs(background_method,
                                            background_kwargs)
+    if (background_method == "sparsemed"
+            and "offset_correction" not in bg_kwargs):
+        # We are using the 'sparsemed' background algorithm, and the user
+        # did not specify whether she wants to perform flickering
+        # correction. Thus, we automatically check whether we need that.
+        with dcnum.read.HDF5Data(path_in) as hd:
+            bg_kwargs["offset_correction"] = \
+                dcnum.read.detect_flickering(hd.image)
     bg_cls = cm.bg_methods[background_method]
     bg_id = bg_cls.get_ppid_from_ppkw(bg_kwargs)
     click.echo(f"Background ID:\t{bg_id}")

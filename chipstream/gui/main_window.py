@@ -190,8 +190,6 @@ class ChipStream(QtWidgets.QMainWindow):
         bg_default = feat_background.BackgroundSparseMed
         bg_kwargs = inspect.getfullargspec(
             bg_default.check_user_kwargs).kwonlydefaults
-        bg_kwargs["offset_correction"] = \
-            self.checkBox_bg_flickering.isChecked()
 
         # populate segmenter and its kwargs
         segmenter = self.comboBox_segmenter.currentData()

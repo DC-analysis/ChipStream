@@ -1,3 +1,6 @@
+0.6.1
+ - enh: automatically detect flickering and apply offset correction
+ - setup: bump dcnum from 0.24.0 to 0.25.0 (flickering detection)
 0.6.0
  - feat: implement segmenter validation step in CLI and GUI
  - feat: support PyTorch segmentation models

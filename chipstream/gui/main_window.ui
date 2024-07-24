@@ -150,28 +150,6 @@
         </spacer>
        </item>
        <item>
-        <widget class="QGroupBox" name="groupBox">
-         <property name="title">
-          <string>Background Image</string>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <item>
-           <widget class="QCheckBox" name="checkBox_bg_flickering">
-            <property name="toolTip">
-             <string>Use this option if the input dataset exhibits global temporal brightness variations of a few grayscal values</string>
-            </property>
-            <property name="text">
-             <string>flickering correction</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item>
         <widget class="QGroupBox" name="groupBox_4">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">

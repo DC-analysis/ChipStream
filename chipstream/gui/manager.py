@@ -1,3 +1,4 @@
+import copy
 import pathlib
 import threading
 import traceback
@@ -218,9 +219,17 @@ class JobWorker(threading.Thread):
             self.callback_when_done()
 
     def run_job(self, path_in, path_out):
+        job_kwargs = copy.deepcopy(self.job_kwargs)
+        # We are using the 'sparsemed' background algorithm by default,
+        # and we would like to perform flickering correction if necessary.
+        with dcnum.read.HDF5Data(path_in) as hd:
+            job_kwargs.setdefault(
+                "background_kwargs", {})["offset_correction"] = \
+                    dcnum.read.detect_flickering(hd.image)
+
         job = dclogic.DCNumPipelineJob(path_in=path_in,
                                        path_out=path_out,
-                                       **self.job_kwargs)
+                                       **job_kwargs)
         self.jobs.append(job)
         # Make sure the job will run (This must be done after adding it
         # to the jobs list and before adding it to the runners list)

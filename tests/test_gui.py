@@ -1,5 +1,6 @@
 import time
 
+import dcnum.read
 import h5py
 import numpy as np
 import pytest
@@ -62,13 +63,35 @@ def test_gui_basins(mw, use_basins):
             assert feat in h5["events"]
 
 
-@pytest.mark.parametrize("correct_offset", [True, False])
-def test_gui_correct_offset(mw, correct_offset):
-    path = retrieve_data(
+@pytest.mark.parametrize("add_flickering", [True, False])
+def test_gui_correct_offset(mw, add_flickering):
+    """Offset correction is done automatically"""
+    path_temp = retrieve_data(
         "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    path = path_temp.with_name("input_path.rtdc")
+
+    # create a test file for more than 100 events
+    with dcnum.read.concatenated_hdf5_data(
+        paths=3*[path_temp],
+        path_out=path,
+            compute_frame=True):
+        pass
+
+    if add_flickering:
+        # provoke offset correction in CLI
+        with h5py.File(path, "a") as h5:
+            size = len(h5["events/image"])
+            images_orig = h5["events/image"]
+            del h5["events/image"]
+            offset = np.zeros((size, 1, 1), dtype=np.uint8)
+            # add flickering every five frames
+            offset[::5] += 5
+            h5["events/image"] = np.array(
+                images_orig + offset,
+                dtype=np.uint8
+            )
     mw.append_paths([path])
     mw.checkBox_pixel_size.setChecked(True)
-    mw.checkBox_bg_flickering.setChecked(correct_offset)
     mw.doubleSpinBox_pixel_size.setValue(0.666)
     mw.on_run()
     while mw.job_manager.is_busy():
@@ -80,7 +103,14 @@ def test_gui_correct_offset(mw, correct_offset):
         assert np.allclose(h5.attrs["imaging:pixel size"],
                            0.666,
                            atol=0, rtol=1e-5)
-        assert ("bg_off" in h5["events"]) == correct_offset
+        if add_flickering:
+            assert h5.attrs["pipeline:dcnum background"] \
+                   == "sparsemed:k=200^s=1^t=0^f=0.8^o=1"
+            assert "bg_off" in h5["events"]
+        else:
+            assert h5.attrs["pipeline:dcnum background"] \
+                   == "sparsemed:k=200^s=1^t=0^f=0.8^o=0"
+            assert "bg_off" not in h5["events"]
 
 
 def test_gui_segm_torch_model(mw, qtbot, monkeypatch):
