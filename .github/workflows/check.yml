@@ -42,8 +42,6 @@ jobs:
         python -m pip install --upgrade pip wheel
         python -m pip install coverage flake8 pytest
         # install base dependencies
-        # https://github.com/luispedro/mahotas/issues/144
-        pip install mahotas==1.4.13
         pip install .
         pip install -r tests/requirements.txt
         # show installed packages
