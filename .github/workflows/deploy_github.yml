@@ -21,7 +21,7 @@ jobs:
     - name: Set env
       shell: bash
       run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@main
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@main
       with:
