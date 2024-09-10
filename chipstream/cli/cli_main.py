@@ -43,11 +43,11 @@ Examples:
 
 Process an .rtdc measurement, without computing the Haralick texture features::
 
- chipstream-cli process -kf haralick=False M001_data.rtdc
+ chipstream-cli -kf haralick=False M001_data.rtdc
 
 Recursively analyze a directory containing .rtdc files::
 
- chipstream-cli process --recursive directory_name
+ chipstream-cli --recursive directory_name
 
 """)
 @click.argument("path_in",

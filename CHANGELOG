@@ -1,3 +1,5 @@
+0.6.2
+ - docs: fix typo in CLI help page
 0.6.1
  - enh: automatically detect flickering and apply offset correction
  - setup: bump dcnum from 0.24.0 to 0.25.0 (flickering detection)
