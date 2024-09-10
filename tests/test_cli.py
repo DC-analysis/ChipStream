@@ -199,6 +199,7 @@ def test_cli_set_background(cli_runner, method, kwarg, ppid):
 
 
 def test_cli_torchmpo(cli_runner):
+    pytest.importorskip("torch")
     mpath = retrieve_model("segm-torch-model_unet-dcnum-test_g1_910c2.zip")
     path_temp = retrieve_data(
         "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
@@ -228,6 +229,7 @@ def test_cli_torchmpo(cli_runner):
 
 
 def test_cli_torchmpo_wrong_model(cli_runner):
+    pytest.importorskip("torch")
     mpath = retrieve_model("segm-torch-model_unet-dcnum-test_g1_910c2.zip")
     path_temp = retrieve_data(
         "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")

@@ -154,6 +154,7 @@ def test_gui_segm_torch_model(mw, qtbot, monkeypatch):
 
 
 def test_gui_segm_torch_model_with_wrong_model(mw, qtbot, monkeypatch):
+    pytest.importorskip("torch")
     # Create a test dataset with metadata that will make the model invalid
     path = retrieve_data(
         "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
