@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
 
       # Used to host cibuildwheel
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@main
 
       - name: Build wheels
         run: |
