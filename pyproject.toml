@@ -27,7 +27,7 @@ classifiers = [
 ]
 license = {text = "GPL version 3.0 or later"}
 dependencies = [
-    "dcnum>=0.25.1",
+    "dcnum>=0.25.2",
     "h5py>=3.0.0, <4",
     "numpy>=1.21, <3",  # CVE-2021-33430
 ]
