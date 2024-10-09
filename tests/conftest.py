@@ -3,6 +3,10 @@ import shutil
 import tempfile
 import time
 
+from dcnum.os_env_st import request_single_threaded
+
+
+request_single_threaded()
 
 TMPDIR = tempfile.mkdtemp(prefix=time.strftime(
     "chipstream_test_%H.%M_"))
