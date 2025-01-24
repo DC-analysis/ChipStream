@@ -1,3 +1,4 @@
 # Any additional requirements for building the application
 pyinstaller>=4.7
 scipy==1.11.4  # had problems with pyinstaller (scipy.special._cdflib not found)
+numba<=0.60.0  # not required after pyinstaller-hooks contrib 2025.1
