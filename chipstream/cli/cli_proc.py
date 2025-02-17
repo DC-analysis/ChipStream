@@ -8,8 +8,6 @@ from dcnum.meta import ppid
 import dcnum.read
 import dcnum.segm
 
-from .. import errors
-
 from . import cli_common as cm
 from .cli_valid import (
     validate_background_kwargs, validate_feature_kwargs, validate_gate_kwargs,
