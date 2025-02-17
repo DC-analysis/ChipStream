@@ -1,5 +1,5 @@
 0.6.5
- - enh: improve error message when input file is invalid
+ - enh: improve error message when input file is invalid (#13)
 0.6.4
  - setup: bump dcnum from 0.25.3 to 0.25.5
 0.6.3
