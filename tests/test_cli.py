@@ -10,7 +10,6 @@ from helper_methods import retrieve_data, retrieve_model
 pytest.importorskip("click")
 
 from chipstream.cli import cli_main  # noqa: E402
-from chipstream import errors
 
 
 @pytest.mark.parametrize("drain", [True, False])
@@ -102,9 +101,9 @@ def test_invalid_input_data_no_image_data(cli_runner):
     path_out = path.with_name("limited_events.rtdc")
 
     result = cli_runner.invoke(cli_main.chipstream_cli,
-                      [str(path),
-                       str(path_out),
-                       ])
+                               [str(path),
+                                str(path_out),
+                                ])
     assert result.exit_code == 1
     assert result.stdout.count("No image data found in input")
 
