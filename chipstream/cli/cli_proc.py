@@ -8,6 +8,7 @@ from dcnum.meta import ppid
 import dcnum.read
 import dcnum.segm
 
+from .. import errors
 
 from . import cli_common as cm
 from .cli_valid import (
@@ -33,19 +34,33 @@ def process_dataset(
     dry_run: bool,
     debug: bool,
 ):
-    # Make sure the pixel size makes sense
-    if pixel_size == 0:
-        pixel_size = validate_pixel_size(data_path=path_in)
+    try:
+        # Make sure the pixel size makes sense
+        if pixel_size == 0:
+            pixel_size = validate_pixel_size(data_path=path_in)
+
+        # data keyword arguments
+        data_kwargs = {"pixel_size": pixel_size,
+                       "index_mapping": index_mapping}
+
+        with dcnum.read.HDF5Data(path_in, **data_kwargs) as hd:
+            # Before doing anything else, check whether we have image data in
+            # the input file.
+            has_data = hd.image is not None
+            # Obtain the data PPID
+            dat_id = hd.get_ppid()
+    except BaseException:
+        raise click.ClickException(
+            f"Not a valid input file '{path_in}'.")
+
+    if not has_data:
+        raise click.ClickException(
+            f"No image data found in input file '{path_in}'.")
 
     if path_out is None:
         path_out = path_in.with_name(path_in.stem + "_dcn.rtdc")
     path_out.parent.mkdir(parents=True, exist_ok=True)
 
-    # data keyword arguments
-    data_kwargs = {"pixel_size": pixel_size,
-                   "index_mapping": index_mapping}
-    with dcnum.read.HDF5Data(path_in, **data_kwargs) as data:
-        dat_id = data.get_ppid()
     click.echo(f"Data ID:\t{dat_id}")
 
     # background keyword arguments

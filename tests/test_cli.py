@@ -10,6 +10,7 @@ from helper_methods import retrieve_data, retrieve_model
 pytest.importorskip("click")
 
 from chipstream.cli import cli_main  # noqa: E402
+from chipstream import errors
 
 
 @pytest.mark.parametrize("drain", [True, False])
@@ -90,6 +91,36 @@ def test_cli_flickering_correction(cli_runner, add_flickering):
             assert h5.attrs["pipeline:dcnum background"] \
                    == "sparsemed:k=200^s=1^t=0^f=0.8^o=0"
             assert "bg_off" not in h5["events"]
+
+
+def test_invalid_input_data_no_image_data(cli_runner):
+    path = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    with h5py.File(path, "a") as h5:
+        del h5["events/image"]
+
+    path_out = path.with_name("limited_events.rtdc")
+
+    result = cli_runner.invoke(cli_main.chipstream_cli,
+                      [str(path),
+                       str(path_out),
+                       ])
+    assert result.exit_code == 1
+    assert result.stdout.count("No image data found in input")
+
+
+def test_invalid_input_data_bad_format(cli_runner, tmp_path):
+    path = tmp_path / "test.rtdc"
+    path.write_text("hello world")
+
+    path_out = path.with_name("limited_events.rtdc")
+
+    result = cli_runner.invoke(cli_main.chipstream_cli,
+                               [str(path),
+                                str(path_out),
+                                ])
+    assert result.exit_code == 1
+    assert result.stdout.count("Not a valid input file")
 
 
 @pytest.mark.parametrize("limit_events,dcnum_mapping,dcnum_yield,f0", [
