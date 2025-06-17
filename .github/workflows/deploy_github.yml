@@ -32,9 +32,9 @@ jobs:
         pip install setuptools wheel twine
         # https://github.com/luispedro/mahotas/issues/144
         pip install mahotas==1.4.13
-        pip install .[cli,gui]
-        # Install CPU versions of torch (smaller file size)
-        pip install torch==2.3.1 torchvision==0.18.1 -f https://download.pytorch.org/whl/cpu/torch/
+        # Install torch with CUDA support
+        pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+        pip install .[cli,gui,torch]
     - name: Build macOS app
       if: runner.os == 'macOS'
       working-directory: ./build-recipes
@@ -44,8 +44,6 @@ jobs:
       if: runner.os == 'windows'
       working-directory: ./build-recipes
       run: |
-        pip uninstall -y pyinstaller
-        pip install https://github.com/paulmueller/pyinstaller/archive/splash_disable_on_subprocess.zip
         pip install -r win_build_requirements.txt
         pyinstaller -y --log-level=WARN win_ChipStream.spec
         dir
