@@ -34,6 +34,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
+all = ["chipstream[cli,gui,torch]"]
 cli = ["click>=8.2"]
 gui = ["pyqt6"]
 torch = ["torch>=2.2"]

@@ -8,6 +8,7 @@ Missing something? Please create an
    :maxdepth: 2
    :caption: Contents:
 
+   install
 
 
 Indices and tables
