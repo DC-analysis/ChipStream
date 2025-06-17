@@ -66,10 +66,10 @@ Testing
     pytest tests
 
 
-.. |ChipStream| image:: https://raw.github.com/DC-analysis/ChipStream/master/docs/artwork/chipstream_splash.png
+.. |ChipStream| image:: https://raw.github.com/DC-analysis/ChipStream/main/docs/artwork/chipstream_splash.png
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/ChipStream.svg
    :target: https://pypi.python.org/pypi/ChipStream
-.. |Build Status| image:: https://img.shields.io/github/actions/workflow/status/DC-analysis/ChipStream/check.yml?branch=master
+.. |Build Status| image:: https://img.shields.io/github/actions/workflow/status/DC-analysis/ChipStream/check.yml?branch=main
    :target: https://github.com/DC-analysis/ChipStream/actions?query=workflow%3AChecks
 .. |Coverage Status| image:: https://img.shields.io/codecov/c/github/DC-analysis/ChipStream/main.svg
    :target: https://codecov.io/gh/DC-analysis/ChipStream
