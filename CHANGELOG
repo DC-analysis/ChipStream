@@ -1,3 +1,5 @@
+0.6.8
+ - fix: consistently use click.ClickException
 0.6.7
  - tests: correctly capture stderr instead of stdout (click 8.2)
  - setup: bump click to 8.2

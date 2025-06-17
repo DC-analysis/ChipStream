@@ -130,10 +130,9 @@ def process_dataset(
     try:
         job.validate()
     except dcnum.segm.SegmenterNotApplicableError as e:
-        click.secho(f"Segmenter '{segmentation_method}' cannot be applied "
-                    f"to '{path_in}': {', '.join(e.reasons_list)}",
-                    fg="red")
-        return 1
+        raise click.ClickException(
+            f"Segmenter '{segmentation_method}' cannot be applied "
+            f"to '{path_in}': {', '.join(e.reasons_list)}")
 
     runner = dcnum.logic.DCNumJobRunner(job)
     runner.start()
@@ -154,9 +153,8 @@ def process_dataset(
     print("")  # new line
 
     if status["state"] == "error":
-        click.secho(runner.error_tb, fg="red")
         runner.join(delete_temporary_files=False)
-        return 1  # "exit code" > 0 means error
+        raise click.ClickException(runner.error_tb)
     else:
         runner.join(delete_temporary_files=True)
         return 0
