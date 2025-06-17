@@ -1,5 +1,6 @@
 0.6.6
  - docs: properly employ license GPL-3.0-or-later
+ - setup: bump dcnum to 0.25.10
 0.6.5
  - enh: improve error message when input file is invalid (#13)
 0.6.4
