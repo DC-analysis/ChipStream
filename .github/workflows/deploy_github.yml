@@ -32,18 +32,20 @@ jobs:
         pip install setuptools wheel twine
         # https://github.com/luispedro/mahotas/issues/144
         pip install mahotas==1.4.13
-        # Install torch with CUDA support
-        pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
-        pip install .[cli,gui,torch]
+        pip install .[cli,gui]
     - name: Build macOS app
       if: runner.os == 'macOS'
       working-directory: ./build-recipes
       run: |
+        # Install torch with CPU support
+        pip install torch==2.3.1+cpu torchvision==0.18.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
         bash ./macos_build_app.sh ChipStream ${{ env.RELEASE_VERSION }}
     - name: Build windows executable
       if: runner.os == 'windows'
       working-directory: ./build-recipes
       run: |
+        # Install torch with CUDA support
+        pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
         pip install -r win_build_requirements.txt
         pyinstaller -y --log-level=WARN win_ChipStream.spec
         dir
