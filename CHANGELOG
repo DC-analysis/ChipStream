@@ -1,6 +1,8 @@
 0.6.6
  - docs: properly employ license GPL-3.0-or-later
+ - tests: correctly capture stderr instead of stdout (click 8.2)
  - setup: bump dcnum to 0.25.10
+ - setup: bump click to 8.2
 0.6.5
  - enh: improve error message when input file is invalid (#13)
 0.6.4

@@ -105,7 +105,7 @@ def test_invalid_input_data_no_image_data(cli_runner):
                                 str(path_out),
                                 ])
     assert result.exit_code == 1
-    assert result.stdout.count("No image data found in input")
+    assert result.stderr.count("No image data found in input")
 
 
 def test_invalid_input_data_bad_format(cli_runner, tmp_path):
@@ -119,7 +119,7 @@ def test_invalid_input_data_bad_format(cli_runner, tmp_path):
                                 str(path_out),
                                 ])
     assert result.exit_code == 1
-    assert result.stdout.count("Not a valid input file")
+    assert result.stderr.count("Not a valid input file")
 
 
 @pytest.mark.parametrize("limit_events,dcnum_mapping,dcnum_yield,f0", [
@@ -284,4 +284,4 @@ def test_cli_torchmpo_wrong_model(cli_runner):
                                 "-ks", f"model_file={mpath}",
                                 ])
     assert result.exit_code == 1
-    assert result.stdout.count("only experiments in channel region supported")
+    assert result.stderr.count("only experiments in channel region supported")

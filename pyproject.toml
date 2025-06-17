@@ -34,7 +34,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-cli = ["click>=8"]
+cli = ["click>=8.2"]
 gui = ["pyqt6"]
 torch = ["torch>=2.2"]
 
