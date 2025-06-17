@@ -20,35 +20,8 @@ Installation
 ------------
 Installers for Windows and macOS are available at the `release page
 <https://github.com/DC-analysis/ChipStream/releases>`__.
-
-If you have Python installed, you can install ChipStream from PyPI
-
-::
-
-    # graphical user interface
-    pip install chipstream[gui]
-    # command-line interface
-    pip install chipstream[cli]
-    # both
-    pip install chipstream[cli,gui]
-
-
-Since version 0.6.0, you can also make use of torch-based segmentation
-models.
-
-::
-
-    pip install chipstream[cli,gui,torch]
-
-If you have a CUDA-compatible GPU and your Python installation cannot access the
-GPU (`torch.cuda.is_available()` is `False`), please use the installation
-instructions from pytorch (https://pytorch.org/get-started/locally/). For
-instance, if you have CUDA 12.1, you can install torch with this pytorch.org
-index URL:
-
-::
-
-    pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+The `documentation/install section <https://chipstream.readthedocs.io/en/latest/install.html>`_
+explains how you can install ChipStream via ``pip``, including extras and caveats.
 
 
 Execution
