@@ -98,7 +98,7 @@ Testing
    :target: https://pypi.python.org/pypi/ChipStream
 .. |Build Status| image:: https://img.shields.io/github/actions/workflow/status/DC-analysis/ChipStream/check.yml?branch=master
    :target: https://github.com/DC-analysis/ChipStream/actions?query=workflow%3AChecks
-.. |Coverage Status| image:: https://img.shields.io/codecov/c/github/DC-analysis/ChipStream/master.svg
+.. |Coverage Status| image:: https://img.shields.io/codecov/c/github/DC-analysis/ChipStream/main.svg
    :target: https://codecov.io/gh/DC-analysis/ChipStream
 .. |Docs Status| image:: https://img.shields.io/readthedocs/chipstream
    :target: https://readthedocs.org/projects/chipstream/builds/
