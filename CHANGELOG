@@ -2,6 +2,7 @@
  - fix: when user quits GUI during processing, forcibly kill all processes
  - docs: add installation section
  - setup: add psutil dependency
+ - setup: bump dcnum to 0.25.11 (measurement identifiers in basins)
 0.7.0
  - build: add torch-CUDA libraries to release binaries
 0.6.8
