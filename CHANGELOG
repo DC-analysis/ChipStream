@@ -1,5 +1,7 @@
-0.7.1
+0.8.0
+ - fix: when user quits GUI during processing, forcibly kill all processes
  - docs: add installation section
+ - setup: add psutil dependency
 0.7.0
  - build: add torch-CUDA libraries to release binaries
 0.6.8

@@ -74,10 +74,11 @@ class ProgressTable(QtWidgets.QTableWidget):
 
     @QtCore.pyqtSlot()
     def update_from_job_manager_progress(self):
-        for ii in range(len(self.job_manager)):
-            st = self.item(ii, 1)
-            st.setText(self.job_manager[ii]["state"])
-            pb = self.cellWidget(ii, 2)
-            progress = self.job_manager[ii]["progress"]
-            if pb is not None and pb.value() != int(progress*1000):
-                pb.setValue(int(progress*1000))
+        if self.job_manager:
+            for ii in range(len(self.job_manager)):
+                st = self.item(ii, 1)
+                st.setText(self.job_manager[ii]["state"])
+                pb = self.cellWidget(ii, 2)
+                progress = self.job_manager[ii]["progress"]
+                if pb is not None and pb.value() != int(progress*1000):
+                    pb.setValue(int(progress*1000))

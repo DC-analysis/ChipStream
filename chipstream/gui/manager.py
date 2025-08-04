@@ -8,6 +8,7 @@ import warnings
 import dcnum.read
 from dcnum import logic as dclogic
 import h5py
+import psutil
 
 
 class JobStillRunningError(BaseException):
@@ -55,6 +56,30 @@ class ChipStreamJobManager:
         self._path_in_list.clear()
         self._runner_list.clear()
         self._worker = None
+
+    def close(self, force=True):
+        if force:
+            # Get the current process
+            proc = psutil.Process()
+            # Forcibly kill all children. This is not very clean, and it
+            # might leave zombie processes behind. But these zombie
+            # processes will not be doing anything with data anymore.
+            for ii in range(100):
+                killed = 0
+                children = list(proc.children(recursive=True))
+                for child in children:
+                    try:
+                        child.kill()
+                        killed += 1
+                    except (psutil.ZombieProcess, psutil.NoSuchProcess):
+                        continue
+                if not killed:
+                    break
+
+            self.clear()
+        elif self.is_busy():
+            raise ValueError(
+                "Manager is busy, use `force=True` to close regardless")
 
     def is_busy(self):
         return self.busy_lock.locked()

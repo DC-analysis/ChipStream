@@ -30,6 +30,7 @@ dependencies = [
     "dcnum>=0.25.10",
     "h5py>=3.0.0, <4",
     "numpy>=1.21, <3",  # CVE-2021-33430
+    "psutil>=7",
 ]
 dynamic = ["version"]
 

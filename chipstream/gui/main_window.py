@@ -6,12 +6,14 @@ import multiprocessing as mp
 import pathlib
 import signal
 import sys
+import time
 import traceback
 import webbrowser
 
 from dcnum.feat import feat_background
 from dcnum.meta import paths as dcnum_paths
 from dcnum.segm import get_available_segmenters
+import psutil
 from PyQt6 import uic, QtCore, QtWidgets
 from PyQt6.QtCore import QStandardPaths
 
@@ -156,6 +158,19 @@ class ChipStream(QtWidgets.QMainWindow):
             for pp in path_list:
                 self.job_manager.add_path(pp)
             self.tableWidget_input.update_from_job_manager()
+
+    @QtCore.pyqtSlot(QtCore.QEvent)
+    def closeEvent(self, event):
+        jobs_running = self.is_running()
+        if jobs_running:
+            self.job_manager.close(force=True)
+        event.accept()
+        if jobs_running:
+            time.sleep(1)
+            # We have killed all background jobs, we might be littered with
+            # zombies. Everything is probably broken. Just get rid of
+            # ourselves.
+            psutil.Process().kill()
 
     @QtCore.pyqtSlot(QtCore.QEvent)
     def dragEnterEvent(self, e):
