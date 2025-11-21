@@ -45,6 +45,36 @@ def test_cli_basins(cli_runner, drain):
             assert feat in h5["events"]
 
 
+def test_cli_compression(cli_runner):
+    path_temp = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    path = path_temp.with_name("input_path.rtdc")
+
+    # create a test file for more than 100 events
+    with dcnum.read.concatenated_hdf5_data(
+        paths=3*[path_temp],
+        path_out=path,
+            compute_frame=True):
+        pass
+
+    path_out = path.with_name("output.rtdc")
+    args = [str(path),
+            str(path_out),
+            "-s", "thresh",
+            "-c", "zstd-2",
+            ]
+
+    result = cli_runner.invoke(cli_main.chipstream_cli, args)
+    assert result.exit_code == 0
+
+    with h5py.File(path_out) as h5:
+        for feat in ["mask", "deform", "aspect"]:
+            assert feat in h5["events"]
+            create_plist = h5["events"][feat].id.get_create_plist()
+            filter_args = create_plist.get_filter_by_id(32015)
+            assert filter_args[1] == (2,)
+
+
 @pytest.mark.parametrize("add_flickering", [True, False])
 def test_cli_flickering_correction(cli_runner, add_flickering):
     path_temp = retrieve_data(

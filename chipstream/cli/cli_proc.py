@@ -28,6 +28,7 @@ def process_dataset(
     index_mapping: int | slice | None,
     # Below this line are arguments that do not affect the pipeline ID
     basin_strategy: Literal["drain", "tap"],
+    compression: str,
     num_cpus: int,
     dry_run: bool,
     debug: bool,
@@ -123,6 +124,7 @@ def process_dataset(
         gate_code=gate_cls.get_ppid_code(),
         gate_kwargs=gate_kwargs,
         basin_strategy=basin_strategy,
+        compression=compression,
         num_procs=num_cpus,
         debug=debug,
     )

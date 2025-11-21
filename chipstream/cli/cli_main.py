@@ -108,6 +108,12 @@ Recursively analyze a directory containing .rtdc files::
               help="Write all basin features from input to output file. This "
                    "option trades computation time and small file size for "
                    "an output file that contains all available features.")
+@click.option("-c", "--compression", type=str, default="zstd-5",
+              show_default=True,
+              help="Data compression algorithm and level, either 'none' or "
+                   "one of 'zstd-1' to 'zstd-9'. Decrease compression level "
+                   "when the CPU is too slow, increase it when this disk "
+                   "is too slow.")
 @click.option("-r", "--recursive", is_flag=True,
               help="Recurse into subdirectories.")
 @click.option("--num-cpus",
@@ -134,6 +140,7 @@ def chipstream_cli(
     pixel_size=0,
     limit_events="0",
     drain_basins=False,
+    compression="zstd-5",
     recursive=False,
     num_cpus=None,
     dry_run=False,
@@ -182,6 +189,7 @@ def chipstream_cli(
         index_mapping=index_mapping,
         # Below this line are arguments that do not define the pipeline ID
         basin_strategy="drain" if drain_basins else "tap",
+        compression=compression,
         num_cpus=num_cpus or mp.cpu_count(),
         dry_run=dry_run,
         debug=debug,
