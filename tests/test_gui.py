@@ -7,6 +7,13 @@ import pytest
 
 from helper_methods import retrieve_data, retrieve_model
 
+# https://github.com/pytorch/pytorch/issues/166628
+# Import pytorch before PyQt6
+try:
+    import torch  # noqa: F401
+except ImportError:
+    pass
+
 pytest.importorskip("PyQt6")
 
 from PyQt6 import QtCore, QtWidgets, QtTest  # noqa: E402

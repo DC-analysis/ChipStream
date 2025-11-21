@@ -1,7 +1,7 @@
 0.9.0
  - cli: add `compression` parameter
  - setup: bump dcnum to 0.26.0 (separate writer process)
- - ci: run everything on Python 3.12
+ - ci: run everything on Python 3.13
 0.8.0
  - fix: when user quits GUI during processing, forcibly kill all processes
  - docs: add installation section

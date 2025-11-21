@@ -1,3 +1,10 @@
+# https://github.com/pytorch/pytorch/issues/166628
+# Import pytorch before PyQt6
+try:
+    import torch  # noqa: F401
+except ImportError:
+    pass
+
 try:
     import PyQt6
 except ImportError:

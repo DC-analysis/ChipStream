@@ -10,6 +10,13 @@ import h5py
 
 from helper_methods import retrieve_data, retrieve_model
 
+# https://github.com/pytorch/pytorch/issues/166628
+# Import pytorch before PyQt6
+try:
+    import torch  # noqa: F401
+except ImportError:
+    pass
+
 
 def test_manager_get_paths_out(tmp_path):
     path = retrieve_data(
