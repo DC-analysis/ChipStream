@@ -3,6 +3,13 @@ import shutil
 import tempfile
 import time
 
+# https://github.com/pytorch/pytorch/issues/166628
+# Import pytorch before PyQt6
+try:
+    import torch  # noqa: F401
+except ImportError:
+    pass
+
 from dcnum.os_env_st import request_single_threaded
 
 
