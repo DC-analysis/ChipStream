@@ -104,7 +104,7 @@ def validate_segmentation_kwargs(seg_method, args):
     annot_appr = spec_appr.annotations
     # process_mask
     if seg_cls.mask_postprocessing:
-        spec_mask = inspect.getfullargspec(seg_cls.process_mask)
+        spec_mask = inspect.getfullargspec(seg_cls.process_labels)
         valid_kw_mask = spec_mask.kwonlyargs
         annot_mask = spec_mask.annotations
     else:
