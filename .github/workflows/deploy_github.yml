@@ -46,7 +46,8 @@ jobs:
       working-directory: ./build-recipes
       run: |
         # Install torch with CUDA support
-        pip install torch torchvision --index-url https://download.pytorch.org/whl/cu129
+        # Select torch >= 2.9 to reduce output file size
+        pip install "torch>=2.9" torchvision --index-url https://download.pytorch.org/whl/cu129
         pip install -r win_build_requirements.txt
         pyinstaller -y --log-level=WARN win_ChipStream.spec
         dir
