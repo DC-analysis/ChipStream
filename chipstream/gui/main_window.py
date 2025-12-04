@@ -305,7 +305,12 @@ class ChipStream(QtWidgets.QMainWindow):
             except ImportError:
                 pass
             else:
-                sw_text += f"- {mod.__name__} {mod.__version__}\n"
+                if hasattr(mod, "__version__"):
+                    mversion = mod.__version__
+                elif hasattr(mod, "_version"):
+                    mversion = mod._version.version
+
+                sw_text += f"- {mod.__name__} {mversion}\n"
         sw_text += f"- PyQt6 {QtCore.QT_VERSION_STR}\n"
 
         QtWidgets.QMessageBox.information(self, "Software", sw_text)
