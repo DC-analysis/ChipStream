@@ -16,7 +16,8 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.13"]
-        os: [macos-latest, windows-latest]
+        # os: [macos-latest, windows-latest]
+        os: [windows-latest]
     steps:
     - name: Set env
       shell: bash
@@ -45,7 +46,7 @@ jobs:
       working-directory: ./build-recipes
       run: |
         # Install torch with CUDA support
-        pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
+        pip install torch torchvision --index-url https://download.pytorch.org/whl/cu129
         pip install -r win_build_requirements.txt
         pyinstaller -y --log-level=WARN win_ChipStream.spec
         dir
