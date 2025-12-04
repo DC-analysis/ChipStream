@@ -1,5 +1,6 @@
 0.9.5
  - docs: list more software in Help/Software menu
+ - build: use CUDA 12.6 to reduce output file size
 0.9.4
  - build: force usage of torch >= 2.9 to reduce artifact size
 0.9.3
