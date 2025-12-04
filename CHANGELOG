@@ -1,3 +1,5 @@
+0.9.2
+ - build: remove build dependency pins for numba and scipy
 0.9.1
  - build: fix Python 3.13 build and update to latest torch version
  - build: enable builds for macOS
