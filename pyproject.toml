@@ -27,7 +27,7 @@ classifiers = [
 ]
 license = "GPL-3.0-or-later"
 dependencies = [
-    "dcnum>=0.27.0",
+    "dcnum>=0.27.1",
     "h5py>=3.0.0, <4",
     "numpy>=1.21, <3",  # CVE-2021-33430
     "psutil>=7",
