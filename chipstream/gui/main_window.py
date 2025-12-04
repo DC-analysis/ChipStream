@@ -287,7 +287,13 @@ class ChipStream(QtWidgets.QMainWindow):
         """Show used software packages and dependencies."""
         libs = ["dcnum",
                 "h5py",
+                "hdf5plugin",
+                "mahotas",
+                "numba",
                 "numpy",
+                "psutil",
+                "scipy",
+                "torch"
                 ]
 
         sw_text = f"ChipStream {version}\n\n"
