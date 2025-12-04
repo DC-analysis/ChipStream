@@ -10,12 +10,12 @@ please use the installation instructions from pytorch
 you can install torch with this pytorch.org index URL::
 
     # Install with CUDA/GPU support (does not work on macOS)
-    pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+    pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
 
 If you don't have a CUDA-capable GPU, you may install a light version of torch::
 
     # Only do this if you would like to have a light CPU-only version of torch
-    pip install torch==2.3.1+cpu torchvision==0.18.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
+    pip install torch==2.9.1+cpu torchvision==0.24.1+cpu --index-url https://download.pytorch.org/whl/cpu
 
 Finally, you can install ChipStream::
 
