@@ -1,3 +1,6 @@
+0.9.6
+ - enh: set "use GPU" as default
+ - enh: compute Haralick texture features by default
 0.9.5
  - docs: list more software in Help/Software menu
  - build: use CUDA 12.6 to reduce output file size

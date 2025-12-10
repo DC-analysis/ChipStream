@@ -189,7 +189,7 @@
             </item>
            </widget>
           </item>
-          <item row="1" column="0" alignment="Qt::AlignTop">
+          <item row="1" column="0" alignment="Qt::AlignmentFlag::AlignTop">
            <widget class="QStackedWidget" name="stackedWidget_segmenter">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
@@ -335,6 +335,9 @@
                 <property name="text">
                  <string>Use GPU</string>
                 </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
                </widget>
               </item>
              </layout>
@@ -344,7 +347,7 @@
          </layout>
         </widget>
        </item>
-       <item alignment="Qt::AlignTop">
+       <item alignment="Qt::AlignmentFlag::AlignTop">
         <widget class="QGroupBox" name="groupBox_5">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
@@ -389,6 +392,9 @@
             </property>
             <property name="text">
              <string>Haralick texture features</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
