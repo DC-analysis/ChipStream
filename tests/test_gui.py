@@ -30,6 +30,8 @@ def mw(qtbot):
     QtTest.QTest.qWait(100)
     QtWidgets.QApplication.processEvents(
         QtCore.QEventLoop.ProcessEventsFlag.AllEvents, 300)
+    # disable GPU for tests
+    mw.checkBox_torch_use_gpu.setChecked(False)
     # Run test
     yield mw
     # Make sure that all daemons are gone
