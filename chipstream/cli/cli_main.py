@@ -1,5 +1,6 @@
 import logging
 import multiprocessing as mp
+import os
 import pathlib
 import sys
 
@@ -117,7 +118,9 @@ Recursively analyze a directory containing .rtdc files::
 @click.option("-r", "--recursive", is_flag=True,
               help="Recurse into subdirectories.")
 @click.option("--num-cpus",
-              type=click.IntRange(min=1, max=mp.cpu_count(), clamp=True),
+              type=click.IntRange(min=1,
+                                  max=len(os.sched_getaffinity(0)),
+                                  clamp=True),
               help="Number of processes to create."
               )
 @click.option("--dry-run", is_flag=True,
@@ -190,7 +193,7 @@ def chipstream_cli(
         # Below this line are arguments that do not define the pipeline ID
         basin_strategy="drain" if drain_basins else "tap",
         compression=compression,
-        num_cpus=num_cpus or mp.cpu_count(),
+        num_cpus=num_cpus or len(os.sched_getaffinity(0)),
         dry_run=dry_run,
         debug=debug,
         )

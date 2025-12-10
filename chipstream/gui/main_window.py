@@ -2,7 +2,7 @@ import atexit
 from importlib import import_module, resources
 import inspect
 import logging
-import multiprocessing as mp
+import os
 import pathlib
 import signal
 import sys
@@ -95,8 +95,8 @@ class ChipStream(QtWidgets.QMainWindow):
             self.comboBox_segmenter.findData(default_segmenter))
 
         # Maximum CPU count
-        self.spinBox_procs.setMaximum(mp.cpu_count())
-        self.spinBox_procs.setValue(mp.cpu_count())
+        self.spinBox_procs.setMaximum(len(os.sched_getaffinity(0)))
+        self.spinBox_procs.setValue(len(os.sched_getaffinity(0)))
 
         # GUI
         self.setWindowTitle(f"ChipStream {version}")
