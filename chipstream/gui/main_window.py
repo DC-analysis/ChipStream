@@ -73,6 +73,8 @@ class ChipStream(QtWidgets.QMainWindow):
         self.comboBox_segmenter.addItem("Machine-learning model", "torch")
         self.checkBox_torch_use_gpu.setVisible(
             "torchsto" in get_available_segmenters())
+        self.checkBox_torch_use_gpu.setChecked(
+            "torchsto" in get_available_segmenters())
         available_models = []
         for pdir in dcnum_paths.search_path_registry.get("torch_model_files",
                                                          []):

@@ -1,4 +1,5 @@
 0.9.7
+ - reg: deselect GPU segmenter when not available
  - ref: replace `mp.cpu_count()` with `len(os.sched_getaffinity(0))`
 0.9.6
  - enh: set "use GPU" as default
