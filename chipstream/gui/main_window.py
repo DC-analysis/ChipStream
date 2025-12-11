@@ -2,7 +2,6 @@ import atexit
 from importlib import import_module, resources
 import inspect
 import logging
-import os
 import pathlib
 import signal
 import sys
@@ -10,6 +9,7 @@ import time
 import traceback
 import webbrowser
 
+from dcnum.common import cpu_count
 from dcnum.feat import feat_background
 from dcnum.meta import paths as dcnum_paths
 from dcnum.segm import get_available_segmenters
@@ -97,8 +97,8 @@ class ChipStream(QtWidgets.QMainWindow):
             self.comboBox_segmenter.findData(default_segmenter))
 
         # Maximum CPU count
-        self.spinBox_procs.setMaximum(len(os.sched_getaffinity(0)))
-        self.spinBox_procs.setValue(len(os.sched_getaffinity(0)))
+        self.spinBox_procs.setMaximum(cpu_count())
+        self.spinBox_procs.setValue(cpu_count())
 
         # GUI
         self.setWindowTitle(f"ChipStream {version}")
