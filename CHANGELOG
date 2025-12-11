@@ -1,6 +1,7 @@
 0.9.7
  - reg: deselect GPU segmenter when not available
  - ref: replace `mp.cpu_count()` with `len(os.sched_getaffinity(0))`
+ - setup: bump dcnum to 0.28.1 (fix broken extractor for invalid events)
 0.9.6
  - enh: set "use GPU" as default
  - enh: compute Haralick texture features by default
