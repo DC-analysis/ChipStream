@@ -1,4 +1,5 @@
 import copy
+from functools import lru_cache
 import pathlib
 import threading
 import traceback
@@ -96,10 +97,7 @@ class ChipStreamJobManager:
             if runner.state == "error":
                 return str(runner.error_tb)
             elif runner.state == "done":
-                with dcnum.read.HDF5Data(runner.job["path_out"]) as hd:
-                    logs = sorted(hd.logs.keys())
-                    logs = [ll for ll in logs if ll.startswith("dcnum-log-")]
-                    return "\n".join(hd.logs[logs[-1]])
+                return fetch_dcnum_log_from_file(runner.job["path_out"])
             else:
                 # Open currently running log
                 return runner.path_log.read_text()
@@ -287,3 +285,11 @@ class JobWorker(threading.Thread):
             # Run the pipeline, catching any errors the runner doesn't.
             runner.run()
         return runner
+
+
+@lru_cache(maxsize=10000)
+def fetch_dcnum_log_from_file(path):
+    with dcnum.read.HDF5Data(path) as hd:
+        logs = sorted(hd.logs.keys())
+        logs = [ll for ll in logs if ll.startswith("dcnum-log-")]
+        return "\n".join(hd.logs[logs[-1]])
