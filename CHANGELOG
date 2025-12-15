@@ -1,5 +1,6 @@
 0.9.9
  - fix: reduce idle CPU usage of GUI and sail around memory leak in dcnum
+ - setup: bump dcnum to 0.28.3 (internal basin sorted first)
 0.9.8
  - ref: replace `len(os.sched_getaffinity(0))` with `dcnum.common.cpu_count()`
 0.9.7
