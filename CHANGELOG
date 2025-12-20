@@ -1,3 +1,5 @@
+0.9.10
+ - enh: put `main` methods in `__name__ == "__main__"` guard
 0.9.9
  - fix: reduce idle CPU usage of GUI and sail around memory leak in dcnum
  - setup: bump dcnum to 0.28.3 (internal basin sorted first)
