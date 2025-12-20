@@ -12,7 +12,6 @@ import webbrowser
 from dcnum.common import cpu_count
 from dcnum.feat import feat_background
 from dcnum.meta import paths as dcnum_paths
-from dcnum.segm import get_available_segmenters
 import psutil
 from PyQt6 import uic, QtCore, QtWidgets
 from PyQt6.QtCore import QStandardPaths
