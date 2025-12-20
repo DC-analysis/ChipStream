@@ -11,12 +11,21 @@
 from PyInstaller.utils.hooks import collect_data_files
 
 hiddenimports = [
-    "chipstream",
-    "chipstream.cli",
-    "chipstream.gui",
-    "dcnum",
+    "cv2",
+    "dcnum.feat",
+    "dcnum.logic",
+    "dcnum.meta",
+    "dcnum.read",
+    "dcnum.segm",
+    "dcnum.write",
+    "h5py",
+    "numba",
+    "scipy.ndimage",
+    "torch",
 ]
 
 # Data files
-datas = collect_data_files("chipstream", include_py_files=True)
-datas += collect_data_files("chipstream", subdir="gui/img")
+datas = collect_data_files("dcnum", include_py_files=True)
+
+# Add the Zstandard library used by dcnum
+datas += collect_data_files("hdf5plugin", includes=["plugins/libh5zstd.*"])
