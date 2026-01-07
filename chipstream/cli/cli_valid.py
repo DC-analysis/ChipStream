@@ -11,7 +11,7 @@ from . import cli_common as cm
 def validate_background_kwargs(bg_method, args):
     """Parse background keyword arguments"""
     # Get list of valid keyword arguments
-    bg_cls = cm.bg_methods[bg_method]
+    bg_cls = cm.get_available_background_methods()[bg_method]
     spec = inspect.getfullargspec(bg_cls.check_user_kwargs)
     valid_kw = spec.kwonlyargs
     annot = spec.annotations
@@ -97,7 +97,7 @@ def validate_pixel_size(data_path):
 def validate_segmentation_kwargs(seg_method, args):
     """Parse segmenter keyword arguments"""
     # Get list of valid keyword arguments
-    seg_cls = cm.seg_methods[seg_method]
+    seg_cls = cm.get_segmenters()[seg_method]
     # segment_algorithm
     spec_appr = inspect.getfullargspec(seg_cls.segment_algorithm)
     valid_kw_appr = spec_appr.kwonlyargs

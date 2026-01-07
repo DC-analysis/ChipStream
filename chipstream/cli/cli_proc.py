@@ -73,14 +73,14 @@ def process_dataset(
         with dcnum.read.HDF5Data(path_in) as hd:
             bg_kwargs["offset_correction"] = \
                 dcnum.read.detect_flickering(hd.image)
-    bg_cls = cm.bg_methods[background_method]
+    bg_cls = cm.get_available_background_methods()[background_method]
     bg_id = bg_cls.get_ppid_from_ppkw(bg_kwargs)
     click.echo(f"Background ID:\t{bg_id}")
 
     # segmenter keyword arguments
     seg_kwargs = validate_segmentation_kwargs(segmentation_method,
                                               segmentation_kwargs)
-    seg_cls = cm.seg_methods[segmentation_method]
+    seg_cls = cm.get_segmenters()[segmentation_method]
     seg_id = seg_cls.get_ppid_from_ppkw(seg_kwargs)
     click.echo(f"Segmenter ID:\t{seg_id}")
 

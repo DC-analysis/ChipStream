@@ -1,13 +1,11 @@
 import logging
 
-from dcnum.feat.feat_background import get_available_background_methods
+from dcnum.feat.feat_background import (  # noqa: F401
+    get_available_background_methods
+)
 from dcnum.feat import Gate, QueueEventExtractor  # noqa: F401
 from dcnum.meta.ppid import get_class_method_info
-from dcnum.segm import get_available_segmenters
-
-
-seg_methods = get_available_segmenters()
-bg_methods = get_available_background_methods()
+from dcnum.segm import get_segmenters, get_available_segmenters  # noqa: F401
 
 
 class PrettyFormatter(logging.Formatter):

@@ -26,9 +26,9 @@ You can specify which segmenter and feature extractor should be used.
 You can also specify additional keyword arguments for
 segmentation (``-ks``), feature extraction (``-kf``), and gating (``-kg``).
 
-Available segmenters with keyword arguments:
+Available segmenters and their keyword arguments:
 
-{cm.get_choices_help_string_segmenter(cm.seg_methods)}
+{cm.get_choices_help_string_segmenter(cm.get_available_segmenters())}
 
 Available feature extractors:
 
@@ -64,8 +64,9 @@ Recursively analyze a directory containing .rtdc files::
                                 path_type=pathlib.Path),
                 )
 @click.option("-b", "--background-method",
-              type=click.Choice(sorted(cm.bg_methods.keys()),
-                                case_sensitive=False),
+              type=click.Choice(
+                  sorted(cm.get_available_background_methods().keys()),
+                  case_sensitive=False),
               default="sparsemed", show_default=True,
               help="Background computation method to use.")
 @click.option("-kb", "background_kwargs",
@@ -75,7 +76,7 @@ Recursively analyze a directory containing .rtdc files::
               metavar="KEY=VALUE",
               )
 @click.option("-s", "--segmentation-method",
-              type=click.Choice(sorted(cm.seg_methods.keys()),
+              type=click.Choice(sorted(cm.get_available_segmenters().keys()),
                                 case_sensitive=False),
               default="thresh", show_default=True,
               help="Segmentation method to use.")
