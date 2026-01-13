@@ -19,7 +19,9 @@ hiddenimports = [
     "dcnum.segm",
     "dcnum.write",
     "h5py",
+    "mahotas",
     "numba",
+    "numpy",
     "scipy.ndimage",
     "torch",
 ]

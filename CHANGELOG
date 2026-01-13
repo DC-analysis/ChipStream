@@ -1,3 +1,5 @@
+0.9.11
+ - build: update PyInstaller hook for dcnum
 0.9.10
  - enh: put `main` methods in `__name__ == "__main__"` guard
  - enh: check for cuda availability instead of letting dcnum decide
