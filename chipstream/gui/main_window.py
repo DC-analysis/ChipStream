@@ -15,7 +15,7 @@ from dcnum.meta import paths as dcnum_paths
 import psutil
 from PyQt6 import uic, QtCore, QtWidgets
 from PyQt6.QtCore import QStandardPaths
-from dcnum.segm.segm_torch.torch_setup import torch
+from torch.cuda import is_available as cuda_is_available
 
 from ..path_cache import PathCache
 from .._version import version
@@ -71,7 +71,7 @@ class ChipStream(QtWidgets.QMainWindow):
         self.comboBox_segmenter.addItem("Thresholding", "thresh")
         # torch
         self.comboBox_segmenter.addItem("Machine-learning model", "torch")
-        use_gpu = torch.cuda.is_available()
+        use_gpu = cuda_is_available()
         self.checkBox_torch_use_gpu.setVisible(use_gpu)
         self.checkBox_torch_use_gpu.setChecked(use_gpu)
         available_models = []
