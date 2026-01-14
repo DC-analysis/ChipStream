@@ -1,5 +1,6 @@
 0.9.13
  - ref: do not import torch from dcnum, actually has no effect
+ - setup: bump dcnum to 0.29.1
 0.9.12
  - fix: import torch from dcnum to make sure variables are set correctly
 0.9.11
