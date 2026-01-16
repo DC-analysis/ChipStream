@@ -45,9 +45,13 @@ jobs:
       if: runner.os == 'windows'
       working-directory: ./build-recipes
       run: |
-        # Install torch with CUDA support
-        # Select torch >= 2.9 and CUDA 12.6 to reduce output file size
-        pip install "torch>=2.9" torchvision --index-url https://download.pytorch.org/whl/cu126
+        # Install torch with CUDA support. CUDA version limits supported GPUs.
+        # For CPU only:
+        # pip install torch==2.9.1+cpu torchvision==0.24.1+cpu --index-url https://download.pytorch.org/whl/cpu
+        # For GPU:
+        # https://developer.nvidia.com/cuda/gpus
+        # https://en.wikipedia.org/wiki/CUDA#GPUs_supported
+        pip install "torch>=2.9" torchvision --index-url https://download.pytorch.org/whl/cu130
         pip install -r win_build_requirements.txt
         pyinstaller -y --log-level=WARN win_ChipStream.spec
         dir
