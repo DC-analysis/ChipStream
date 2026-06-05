@@ -496,9 +496,9 @@
         </widget>
        </item>
        <item>
-        <widget class="QCommandLinkButton" name="commandLinkButton_run">
+        <widget class="QPushButton" name="pushButton_run">
          <property name="text">
-          <string>Run Pipeline</string>
+          <string>   Run Pipeline</string>
          </property>
         </widget>
        </item>

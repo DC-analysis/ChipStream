@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import atexit
+import functools
 from importlib import import_module
+import importlib.resources
 import inspect
 import logging
 import pathlib
@@ -15,7 +17,7 @@ from dcnum.common import cpu_count
 from dcnum.feat import feat_background
 from dcnum.meta import paths as dcnum_paths
 import psutil
-from PyQt6 import QtCore, QtWidgets
+from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import QStandardPaths
 from torch.cuda import is_available as cuda_is_available
 
@@ -64,6 +66,27 @@ class ChipStream(QtWidgets.QMainWindow):
         self.ui.tableWidget_input.set_job_manager(self.job_manager)
 
         self.logger = logging.getLogger(__name__)
+
+        # colorize button
+        self.ui.pushButton_run.setStyleSheet("""
+        padding-left: 10px;
+        padding-right: 10px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        margin: 10 px;
+        qproperty-iconSize: 20px;
+        color: white;
+        font-weight: bold;
+        background-color: #3C41AA;
+
+        hover {
+            background-color: #7B7BB8;
+        }
+        pressed {
+            background-color: #424465;
+        }
+        """)
+        self.ui.pushButton_run.setIcon(get_icon("chipstream_white"))
 
         # Populate segmenter combobox
         self.ui.comboBox_segmenter.blockSignals(True)
@@ -118,7 +141,7 @@ class ChipStream(QtWidgets.QMainWindow):
         self.ui.actionAbout.triggered.connect(self.on_action_about)
 
         # Command button
-        self.ui.commandLinkButton_run.clicked.connect(self.on_run)
+        self.ui.pushButton_run.clicked.connect(self.on_run)
 
         # Path selection
         cache_loc = pathlib.Path(
@@ -427,6 +450,24 @@ class ChipStream(QtWidgets.QMainWindow):
         model_file = self.ui.comboBox_torch_model.currentData()
         dlg = TorchModelProperties(self, model_file)
         dlg.exec()
+
+
+@functools.lru_cache(maxsize=100)
+def get_icon(name):
+    try:
+        icon = QtGui.QIcon()
+        ref = importlib.resources.files(
+            "chipstream.gui.img") / f"{name}.svg"
+        with importlib.resources.as_file(ref) as path:
+            icon.addFile(str(path))
+        if name != "placeholder" and icon.isNull():
+            icon = get_icon("placeholder")
+    except BaseException:
+        if name == "placeholder":
+            raise
+        else:
+            icon = get_icon("placeholder")
+    return icon
 
 
 def excepthook(etype, value, trace):
