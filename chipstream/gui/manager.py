@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import copy
 from functools import lru_cache
 import pathlib
 import threading
 import traceback
-from typing import Dict, List
+from typing import Callable
 import warnings
 
 import dcnum.read
@@ -152,8 +154,8 @@ class ChipStreamJobManager:
             return self._runner_list[index]
 
     def run_all_in_thread(self,
-                          job_kwargs: Dict = None,
-                          callback_when_done: callable = None):
+                          job_kwargs: dict | None = None,
+                          callback_when_done: Callable | None = None):
         if job_kwargs is None:
             job_kwargs = {}
         self._worker = JobWorker(paths_in=self._path_in_list,
@@ -184,12 +186,12 @@ class ErrorredRunner:
 
 class JobWorker(threading.Thread):
     def __init__(self,
-                 paths_in: List[List[pathlib.Path | str]],
-                 paths_out: List[List[pathlib.Path | str]],
-                 job_kwargs: Dict,
-                 runners: List,
-                 busy_lock: threading.Lock = None,
-                 callback_when_done: callable = None,
+                 paths_in: list[list[pathlib.Path | str]],
+                 paths_out: list[list[pathlib.Path | str]],
+                 job_kwargs: dict,
+                 runners: list,
+                 busy_lock: threading.Lock | None = None,
+                 callback_when_done: Callable | None = None,
                  override: bool = False,
                  *args, **kwargs):
         """Thread for running the pipeline

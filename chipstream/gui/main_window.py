@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import atexit
 from importlib import import_module
 import inspect
@@ -316,6 +318,8 @@ class ChipStream(QtWidgets.QMainWindow):
                     mversion = mod.__version__
                 elif hasattr(mod, "_version"):
                     mversion = mod._version.version
+                else:
+                    mversion = ""
 
                 sw_text += f"- {mod.__name__} {mversion}\n"
         sw_text += f"- PyQt6 {QtCore.QT_VERSION_STR}\n"
