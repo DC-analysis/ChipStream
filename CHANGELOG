@@ -1,5 +1,6 @@
 0.10.0
  - enh: colorize "Run Pipeline" button (#10)
+ - docs: remove black from logo/splash
  - ref: migrate from uic to pre-generated `*_ui.py` files
 0.9.14
  - build: CUDA 13 build
