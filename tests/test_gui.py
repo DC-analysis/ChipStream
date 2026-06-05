@@ -31,7 +31,7 @@ def mw(qtbot):
     QtWidgets.QApplication.processEvents(
         QtCore.QEventLoop.ProcessEventsFlag.AllEvents, 300)
     # disable GPU for tests
-    mw.checkBox_torch_use_gpu.setChecked(False)
+    mw.ui.checkBox_torch_use_gpu.setChecked(False)
     # Run test
     yield mw
     # Make sure that all daemons are gone
@@ -45,8 +45,8 @@ def mw(qtbot):
 
 def test_gui_basic(mw):
     # Just check some known properties in the UI.
-    assert mw.spinBox_thresh.value() == -6
-    assert mw.checkBox_feat_bright.isChecked()
+    assert mw.ui.spinBox_thresh.value() == -6
+    assert mw.ui.checkBox_feat_bright.isChecked()
     assert len(mw.job_manager) == 0
 
 
@@ -55,7 +55,7 @@ def test_gui_basins(mw, use_basins):
     path = retrieve_data(
         "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
     mw.append_paths([path])
-    mw.checkBox_basins.setChecked(use_basins)
+    mw.ui.checkBox_basins.setChecked(use_basins)
     mw.on_run()
     while mw.job_manager.is_busy():
         time.sleep(.1)
@@ -100,8 +100,8 @@ def test_gui_correct_offset(mw, add_flickering):
                 dtype=np.uint8
             )
     mw.append_paths([path])
-    mw.checkBox_pixel_size.setChecked(True)
-    mw.doubleSpinBox_pixel_size.setValue(0.666)
+    mw.ui.checkBox_pixel_size.setChecked(True)
+    mw.ui.doubleSpinBox_pixel_size.setValue(0.666)
     mw.on_run()
     while mw.job_manager.is_busy():
         time.sleep(.1)
@@ -132,16 +132,17 @@ def test_gui_segm_torch_model(mw, qtbot, monkeypatch):
     # Import the model
     monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileNames",
                         lambda *args: ([path_model], ""))
-    qtbot.mouseClick(mw.toolButton_torch_add, QtCore.Qt.MouseButton.LeftButton)
+    qtbot.mouseClick(mw.ui.toolButton_torch_add,
+                     QtCore.Qt.MouseButton.LeftButton)
     # select the model
-    for idm in range(mw.comboBox_torch_model.count()):
-        data = mw.comboBox_torch_model.itemData(idm)
+    for idm in range(mw.ui.comboBox_torch_model.count()):
+        data = mw.ui.comboBox_torch_model.itemData(idm)
         if data.name == path_model.name:
             break
     else:
         assert False
 
-    mw.comboBox_torch_model.setCurrentIndex(idm)
+    mw.ui.comboBox_torch_model.setCurrentIndex(idm)
 
     # Add the input file
     mw.append_paths([path])
@@ -177,16 +178,17 @@ def test_gui_segm_torch_model_with_wrong_model(mw, qtbot, monkeypatch):
     # Import the model
     monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileNames",
                         lambda *args: ([path_model], ""))
-    qtbot.mouseClick(mw.toolButton_torch_add, QtCore.Qt.MouseButton.LeftButton)
+    qtbot.mouseClick(mw.ui.toolButton_torch_add,
+                     QtCore.Qt.MouseButton.LeftButton)
     # select the model
-    for idm in range(mw.comboBox_torch_model.count()):
-        data = mw.comboBox_torch_model.itemData(idm)
+    for idm in range(mw.ui.comboBox_torch_model.count()):
+        data = mw.ui.comboBox_torch_model.itemData(idm)
         if data.name == path_model.name:
             break
     else:
         assert False
 
-    mw.comboBox_torch_model.setCurrentIndex(idm)
+    mw.ui.comboBox_torch_model.setCurrentIndex(idm)
 
     # Add the input file
     mw.append_paths([path])
@@ -199,9 +201,9 @@ def test_gui_segm_torch_model_with_wrong_model(mw, qtbot, monkeypatch):
     assert not out_path.exists()
 
     # Make sure there is an error message in the interface
-    qtbot.mouseClick(mw.tableWidget_input.cellWidget(0, 2),
+    qtbot.mouseClick(mw.ui.tableWidget_input.cellWidget(0, 2),
                      QtCore.Qt.MouseButton.LeftButton)
-    assert mw.textBrowser.toPlainText().count(
+    assert mw.ui.textBrowser.toPlainText().count(
         "only experiments in channel region supported")
 
 
@@ -209,8 +211,8 @@ def test_gui_set_pixel_size(mw):
     path = retrieve_data(
         "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
     mw.append_paths([path])
-    mw.checkBox_pixel_size.setChecked(True)
-    mw.doubleSpinBox_pixel_size.setValue(0.666)
+    mw.ui.checkBox_pixel_size.setChecked(True)
+    mw.ui.doubleSpinBox_pixel_size.setValue(0.666)
     mw.on_run()
     while mw.job_manager.is_busy():
         time.sleep(.1)
@@ -228,9 +230,9 @@ def test_gui_use_volume(mw, use_volume):
     path = retrieve_data(
         "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
     mw.append_paths([path])
-    mw.checkBox_pixel_size.setChecked(True)
-    mw.checkBox_feat_volume.setChecked(use_volume)
-    mw.doubleSpinBox_pixel_size.setValue(0.666)
+    mw.ui.checkBox_pixel_size.setChecked(True)
+    mw.ui.checkBox_feat_volume.setChecked(use_volume)
+    mw.ui.doubleSpinBox_pixel_size.setValue(0.666)
     mw.on_run()
     while mw.job_manager.is_busy():
         time.sleep(.1)

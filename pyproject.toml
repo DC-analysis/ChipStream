@@ -50,6 +50,9 @@ tracker = "https://github.com/DC-Analysis/ChipStream/issues"
 documentation = "https://chipstream.readthedocs.io/en/stable/"
 changelog = "https://chipstream.readthedocs.io/en/stable/sec_changelog.html"
 
+[tool.setuptools]
+packages = ["chipstream"]
+
 [tool.setuptools_scm]
 write_to = "chipstream/_version.py"
 version_scheme = "post-release"
