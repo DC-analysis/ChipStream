@@ -69,21 +69,21 @@ class ChipStream(QtWidgets.QMainWindow):
 
         # colorize button
         self.ui.pushButton_run.setStyleSheet("""
-        padding-left: 10px;
-        padding-right: 10px;
-        padding-top: 10px;
-        padding-bottom: 10px;
-        margin: 10 px;
-        qproperty-iconSize: 20px;
-        color: white;
-        font-weight: bold;
-        background-color: #3C41AA;
-
-        hover {
-            background-color: #7B7BB8;
+        QPushButton {
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            qproperty-iconSize: 20px;
+            color: white;
+            font-weight: bold;
+            background-color: #3C41AA;
         }
-        pressed {
-            background-color: #424465;
+        QPushButton:hover {
+            background-color: #4C51BA;
+        }
+        QPushButton:pressed {
+            background-color: #2C319A;
         }
         """)
         self.ui.pushButton_run.setIcon(get_icon("chipstream_white"))
