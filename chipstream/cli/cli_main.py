@@ -4,12 +4,31 @@ import pathlib
 import sys
 
 import click
+import dcnum
 from dcnum.common import cpu_count
+from dcnum.segm.segm_torch import torch_setup
 
 from .._version import version
 
 from . import cli_common as cm
 from .cli_proc import process_dataset
+
+
+def print_system_info(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    print("chipstream version:\t", version)
+    print("dcnum version:\t", dcnum.__version__)
+    print("installed segmenters:\t",
+          ", ".join(cm.get_segmenters().keys()))
+    print("available segmenters:\t",
+          ", ".join(cm.get_available_segmenters().keys()))
+    try:
+        has_cuda = torch_setup.torch.cuda.is_available()
+    except BaseException:
+        has_cuda = False
+    print("CUDA compute available:\t", str(has_cuda).lower())
+    ctx.exit()
 
 
 @click.command(name="chipstream-cli",
@@ -131,6 +150,8 @@ Recursively analyze a directory containing .rtdc files::
 @click.option("--debug", is_flag=True,
               help="Run chipstream in debugging mode. This disables "
                    "multiprocessing and yields a more verbose output.")
+@click.option('--info', is_flag=True, callback=print_system_info,
+              expose_value=False, is_eager=True)
 @click.version_option(version)
 def chipstream_cli(
     path_in,
@@ -151,7 +172,6 @@ def chipstream_cli(
     verbose=False,
     debug=False,
 ):
-
     if debug:
         click.secho("Running in debug mode (this will be slow)",
                     fg="yellow")

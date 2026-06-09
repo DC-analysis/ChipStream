@@ -6,9 +6,10 @@ import pytest
 
 from helper_methods import retrieve_data, retrieve_model
 
-
 pytest.importorskip("click")
 
+import dcnum  # noqa: E402
+import chipstream  # noqa: E402
 from chipstream.cli import cli_main  # noqa: E402
 
 
@@ -315,3 +316,20 @@ def test_cli_torchmpo_wrong_model(cli_runner):
                                 ])
     assert result.exit_code == 1
     assert result.stderr.count("only experiments in channel region supported")
+
+
+def test_z_cli_info(cli_runner):
+    result = cli_runner.invoke(cli_main.chipstream_cli,
+                               ["--info"])
+    assert result.exit_code == 0
+    data = {}
+    for line in result.stdout.split("\n"):
+        if line.count(":"):
+            var, val = line.split(":", 1)
+            data[var.strip()] = val.strip()
+    assert "chipstream version" in data
+    assert data["chipstream version"] == chipstream.__version__
+    assert data["dcnum version"] == dcnum.__version__
+    assert "dcnum version" in data
+    assert "CUDA compute available" in data
+    assert data["CUDA compute available"] in ["true", "false"]
