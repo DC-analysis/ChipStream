@@ -1,5 +1,6 @@
 0.10.1
  - enh: add `--info` flag (prints runtime info) for `chipstream-cli`
+ - setup: require Python>=3.11
 0.10.0
  - enh: colorize "Run Pipeline" button (#10)
  - docs: remove black from logo/splash

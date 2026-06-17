@@ -17,7 +17,7 @@ maintainers = [
 ]
 description = "GUI and CLI for DC data postprocessing"
 readme = "README.rst"
-requires-python = ">=3.10, <4"
+requires-python = ">=3.11, <4"
 keywords = ["RT-DC", "deformability", "cytometry"]
 classifiers = [
     'Operating System :: OS Independent',
