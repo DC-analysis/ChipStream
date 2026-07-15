@@ -16,6 +16,8 @@ def main():
 
     class DevNull:
         """Effectively a file-like object for piping everything to nothing."""
+        def flush(self):
+            pass
 
         def write(self, *args, **kwargs):
             pass

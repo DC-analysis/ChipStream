@@ -1,3 +1,5 @@
+0.10.2
+ - enh: add `flush` method to `DevNull` null writer
 0.10.1
  - enh: add `--info` flag (prints runtime info) for `chipstream-cli`
  - setup: bump dcnum to 0.30.1 (basin-based background in input file)
