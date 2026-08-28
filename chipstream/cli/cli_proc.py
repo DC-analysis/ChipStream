@@ -1,6 +1,6 @@
 import pathlib
 import time
-from typing import List, Literal
+from typing import Literal
 
 import click
 import dcnum.logic
@@ -19,11 +19,11 @@ def process_dataset(
     path_in: pathlib.Path,
     path_out: pathlib.Path,
     background_method: str,
-    background_kwargs: List[str],
+    background_kwargs: list[str],
     segmentation_method: str,
-    segmentation_kwargs: List[str],
-    feature_kwargs: List[str],
-    gate_kwargs: List[str],
+    segmentation_kwargs: list[str],
+    feature_kwargs: list[str],
+    gate_kwargs: list[str],
     pixel_size: float,
     index_mapping: int | slice | None,
     # Below this line are arguments that do not affect the pipeline ID
@@ -63,37 +63,37 @@ def process_dataset(
     click.echo(f"Data ID:\t{dat_id}")
 
     # background keyword arguments
-    bg_kwargs = validate_background_kwargs(background_method,
-                                           background_kwargs)
+    bg_kwargs_dict = validate_background_kwargs(background_method,
+                                                background_kwargs)
     if (background_method == "sparsemed"
-            and "offset_correction" not in bg_kwargs):
+            and "offset_correction" not in bg_kwargs_dict):
         # We are using the 'sparsemed' background algorithm, and the user
         # did not specify whether they want to perform flickering
         # correction. Thus, we automatically check whether we need that.
         with dcnum.read.HDF5Data(path_in) as hd:
-            bg_kwargs["offset_correction"] = \
+            bg_kwargs_dict["offset_correction"] = \
                 dcnum.read.detect_flickering(hd.image)
     bg_cls = cm.get_available_background_methods()[background_method]
-    bg_id = bg_cls.get_ppid_from_ppkw(bg_kwargs)
+    bg_id = bg_cls.get_ppid_from_ppkw(bg_kwargs_dict)
     click.echo(f"Background ID:\t{bg_id}")
 
     # segmenter keyword arguments
-    seg_kwargs = validate_segmentation_kwargs(segmentation_method,
-                                              segmentation_kwargs)
+    seg_kwargs_dict = validate_segmentation_kwargs(segmentation_method,
+                                                   segmentation_kwargs)
     seg_cls = cm.get_segmenters()[segmentation_method]
-    seg_id = seg_cls.get_ppid_from_ppkw(seg_kwargs)
+    seg_id = seg_cls.get_ppid_from_ppkw(seg_kwargs_dict)
     click.echo(f"Segmenter ID:\t{seg_id}")
 
     # feature keyword arguments
-    feat_kwargs = validate_feature_kwargs(feature_kwargs)
+    feat_kwargs_dict = validate_feature_kwargs(feature_kwargs)
     feat_cls = cm.QueueEventExtractor
-    feat_id = feat_cls.get_ppid_from_ppkw(feat_kwargs)
+    feat_id = feat_cls.get_ppid_from_ppkw(feat_kwargs_dict)
     click.echo(f"Feature ID:\t{feat_id}")
 
     # gate keyword arguments
     gate_cls = cm.Gate
-    gate_kwargs = validate_gate_kwargs(gate_kwargs)
-    gate_id = gate_cls.get_ppid_from_ppkw(gate_kwargs)
+    gate_kwargs_dict = validate_gate_kwargs(gate_kwargs)
+    gate_id = gate_cls.get_ppid_from_ppkw(gate_kwargs_dict)
     click.echo(f"Gate ID:\t{gate_id}")
 
     # compute pipeline hash
@@ -116,13 +116,13 @@ def process_dataset(
         data_code="hdf",
         data_kwargs=data_kwargs,
         background_code=bg_cls.get_ppid_code(),
-        background_kwargs=bg_kwargs,
+        background_kwargs=bg_kwargs_dict,
         segmenter_code=seg_cls.get_ppid_code(),
-        segmenter_kwargs=seg_kwargs,
+        segmenter_kwargs=seg_kwargs_dict,
         feature_code=feat_cls.get_ppid_code(),
-        feature_kwargs=feat_kwargs,
+        feature_kwargs=feat_kwargs_dict,
         gate_code=gate_cls.get_ppid_code(),
-        gate_kwargs=gate_kwargs,
+        gate_kwargs=gate_kwargs_dict,
         basin_strategy=basin_strategy,
         compression=compression,
         num_procs=num_cpus,
@@ -152,7 +152,7 @@ def process_dataset(
         if status["state"] in ["done", "error"]:
             break
         time.sleep(.3)  # don't use 100% CPU
-    print("")  # new line
+    print()  # new line
 
     if status["state"] == "error":
         runner.join(delete_temporary_files=False)

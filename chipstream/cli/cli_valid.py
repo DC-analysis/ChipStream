@@ -1,4 +1,5 @@
 import inspect
+from typing import Any
 import warnings
 
 from dcnum.meta import ppid
@@ -26,7 +27,7 @@ def validate_background_kwargs(bg_method, args):
     return kwargs
 
 
-def validate_feature_kwargs(args):
+def validate_feature_kwargs(args: list[str]) -> dict[str, Any]:
     # Get list of valid keyword arguments
     feat_cls = cm.QueueEventExtractor
     feat_code = feat_cls.get_ppid_code()
@@ -46,7 +47,7 @@ def validate_feature_kwargs(args):
     return kwargs
 
 
-def validate_gate_kwargs(args):
+def validate_gate_kwargs(args: list[str]) -> dict[str, Any]:
     spec = inspect.getfullargspec(cm.Gate.__init__)
     valid_kw_appr = spec.kwonlyargs
     annot_appr = spec.annotations
