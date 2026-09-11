@@ -34,6 +34,10 @@ jobs:
         # https://github.com/luispedro/mahotas/issues/144
         pip install mahotas==1.4.13
         pip install .[cli,gui]
+    - name: Install openvino
+      run: |
+        pip install openvino
+        pip uninstall openvino_telemetry
     - name: Build macOS app
       if: runner.os == 'macOS'
       working-directory: ./build-recipes

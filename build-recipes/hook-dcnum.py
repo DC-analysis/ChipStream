@@ -22,6 +22,7 @@ hiddenimports = [
     "mahotas",
     "numba",
     "numpy",
+    "openvino",
     "scipy.ndimage",
     "torch",
 ]
