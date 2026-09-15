@@ -1,4 +1,5 @@
 0.11.0
+ - fix: annotation-based type checking during kwarg validation phase
  - enh: add `flush` method to `DevNull` null writer
  - ref: partial cleanup with ruff
  - setup: add openvino for faster CPU segmentation

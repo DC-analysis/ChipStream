@@ -1,5 +1,5 @@
 import inspect
-from typing import Any
+from typing import Any, get_type_hints
 import warnings
 
 from dcnum.meta import ppid
@@ -15,7 +15,7 @@ def validate_background_kwargs(bg_method, args):
     bg_cls = cm.get_available_background_methods()[bg_method]
     spec = inspect.getfullargspec(bg_cls.check_user_kwargs)
     valid_kw = spec.kwonlyargs
-    annot = spec.annotations
+    annot = get_type_hints(bg_cls.check_user_kwargs)
     # Convert the input args to key-value pairs
     kwargs = {}
     for key, value in [a.split("=") for a in args]:
@@ -32,34 +32,34 @@ def validate_feature_kwargs(args: list[str]) -> dict[str, Any]:
     feat_cls = cm.QueueEventExtractor
     feat_code = feat_cls.get_ppid_code()
     # extract_approach
-    spec_appr = inspect.getfullargspec(feat_cls.get_events_from_masks)
-    valid_kw_appr = spec_appr.kwonlyargs
-    annot_appr = spec_appr.annotations
+    spec = inspect.getfullargspec(feat_cls.get_events_from_masks)
+    valid_kw = spec.kwonlyargs
+    annot = get_type_hints(feat_cls.get_events_from_masks)
     # Convert the input args to key-value pairs
     kwargs = {}
     for key, value in [a.split("=") for a in args]:
-        if key in valid_kw_appr:
-            kwargs[key] = ppid.convert_to_dtype(value, annot_appr[key])
+        if key in valid_kw:
+            kwargs[key] = ppid.convert_to_dtype(value, annot[key])
         else:
             raise ValueError(
                 f"Invalid keyword '{key}' for '{feat_code}'. "
-                f"Allowed keywords are {valid_kw_appr}!")
+                f"Allowed keywords are {valid_kw}!")
     return kwargs
 
 
 def validate_gate_kwargs(args: list[str]) -> dict[str, Any]:
     spec = inspect.getfullargspec(cm.Gate.__init__)
-    valid_kw_appr = spec.kwonlyargs
-    annot_appr = spec.annotations
+    valid_kw = spec.kwonlyargs
+    annot = get_type_hints(cm.Gate.__init__)
     # Convert the input args to key-value pairs
     kwargs = {}
     for key, value in [a.split("=") for a in args]:
-        if key in valid_kw_appr:
-            kwargs[key] = ppid.convert_to_dtype(value, annot_appr[key])
+        if key in valid_kw:
+            kwargs[key] = ppid.convert_to_dtype(value, annot[key])
         else:
             raise ValueError(
                 f"Invalid keyword '{key}' for gating. "
-                f"Allowed keywords are {valid_kw_appr} (and box filters)!")
+                f"Allowed keywords are {valid_kw} (and box filters)!")
     return kwargs
 
 
@@ -101,13 +101,14 @@ def validate_segmentation_kwargs(seg_method, args):
     seg_cls = cm.get_segmenters()[seg_method]
     # segment_algorithm
     spec_appr = inspect.getfullargspec(seg_cls.segment_algorithm)
-    valid_kw_appr = spec_appr.kwonlyargs
-    annot_appr = spec_appr.annotations
+    valid_kw = spec_appr.kwonlyargs
+    annot = get_type_hints(seg_cls.segment_algorithm)
+
     # process_mask
     if seg_cls.mask_postprocessing:
         spec_mask = inspect.getfullargspec(seg_cls.process_labels)
         valid_kw_mask = spec_mask.kwonlyargs
-        annot_mask = spec_mask.annotations
+        annot_mask = get_type_hints(seg_cls.process_labels)
     else:
         valid_kw_mask = []
         annot_mask = {}
@@ -118,11 +119,11 @@ def validate_segmentation_kwargs(seg_method, args):
     for key, value in [a.split("=") for a in args]:
         if key in valid_kw_mask:
             kwargs_mask[key] = ppid.convert_to_dtype(value, annot_mask[key])
-        elif key in valid_kw_appr:
-            kwargs[key] = ppid.convert_to_dtype(value, annot_appr[key])
+        elif key in valid_kw:
+            kwargs[key] = ppid.convert_to_dtype(value, annot[key])
         else:
             raise ValueError(
                 f"Invalid keyword '{key}' for {seg_method}. "
-                f"Allowed keywords are {valid_kw_appr + valid_kw_mask}!")
+                f"Allowed keywords are {valid_kw + valid_kw_mask}!")
     kwargs["kwargs_mask"] = kwargs_mask
     return kwargs
