@@ -5,7 +5,7 @@ class ProgressTable(QtWidgets.QTableWidget):
     row_selected = QtCore.pyqtSignal(int)
 
     def __init__(self, *args, **kwargs):
-        super(ProgressTable, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.job_manager = None
 
         # signals

@@ -24,7 +24,8 @@ class TorchModelProperties(QtWidgets.QDialog):
 
             self.ui.lineEdit_name.setText(metadata["name"])
             self.ui.lineEdit_path.setText(str(model_file.resolve()))
-            self.ui.lineEdit_id.setText(metadata["identifier"] + "_" + md5sum[:5])
+            self.ui.lineEdit_id.setText(
+                metadata["identifier"] + "_" + md5sum[:5])
             self.ui.lineEdit_date.setText(metadata["date"])
             self.ui.lineEdit_hash.setText(md5sum)
 

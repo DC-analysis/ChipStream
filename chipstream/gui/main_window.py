@@ -218,8 +218,7 @@ class ChipStream(QtWidgets.QMainWindow):
         for ff in urls:
             pp = pathlib.Path(ff.toLocalFile())
             if pp.is_dir():
-                for pi in pp.rglob("*.rtdc"):
-                    pathlist.append(pi)
+                pathlist += list(pp.rglob("*.rtdc"))
             elif pp.suffix == ".rtdc":
                 pathlist.append(pp)
         self.append_paths(pathlist)
@@ -287,7 +286,7 @@ class ChipStream(QtWidgets.QMainWindow):
                       f"GitHub: "
                       f"<a href='https://github.com/{gh}'>{gh}</a><br>"
                       f"Documentation: "
-                      f"<a href='https://{rtd}'>{rtd}</a><br>")  # noqa 501
+                      f"<a href='https://{rtd}'>{rtd}</a><br>")
         QtWidgets.QMessageBox.about(self,
                                     f"ChipStream {version}",
                                     about_text)
@@ -507,8 +506,7 @@ def get_main() -> ChipStream:
     for widget in app.topLevelWidgets():
         if isinstance(widget, QtWidgets.QMainWindow):
             return widget
-    else:
-        raise ValueError("Main instance not found!")
+    raise ValueError("Main instance not found!")
 
 
 # Make Ctr+C close the app

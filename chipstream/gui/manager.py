@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 import copy
 from functools import lru_cache
 import pathlib
 import threading
 import traceback
-from typing import Callable
 import warnings
 
 import dcnum.read
@@ -67,7 +67,7 @@ class ChipStreamJobManager:
             # Forcibly kill all children. This is not very clean, and it
             # might leave zombie processes behind. But these zombie
             # processes will not be doing anything with data anymore.
-            for ii in range(100):
+            for _ in range(100):
                 killed = 0
                 children = list(proc.children(recursive=True))
                 for child in children:
@@ -115,7 +115,7 @@ class ChipStreamJobManager:
         else:
             # Get common stem for all paths
             # First, check whether all input files are on the same anchor.
-            anchors = set([pp.anchor for pp, _ in self._path_in_list])
+            anchors = {pp.anchor for pp, _ in self._path_in_list}
             if len(anchors) == 1:
                 common_parent = self._path_in_list[0][0].parent
                 for pp, _ in self._path_in_list[1:]:
@@ -215,7 +215,7 @@ class JobWorker(threading.Thread):
             This does not override files that already have the correct
             pipeline identifiers.
         """
-        super(JobWorker, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.paths_in = paths_in
         self.paths_out = paths_out
         self.jobs = []
