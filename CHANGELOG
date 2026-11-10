@@ -1,5 +1,6 @@
 0.11.1
  - enh: don't show rounded 100% in CLI progress
+ - setup: bump dcnum to 0.31.2
 0.11.0
  - fix: annotation-based type checking during kwarg validation phase
  - fix: model metadata fetching with dcnum 0.31.0
