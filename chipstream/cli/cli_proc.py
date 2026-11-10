@@ -142,7 +142,7 @@ def process_dataset(
     prev_str = ""
     while True:
         status = runner.get_status()
-        progress = status["progress"]
+        progress = status["progress"] * 0.99  # never show 100%
         state = status["state"]
         print_str = f"Processing {progress:.0%} ({state})"
         if print_str != prev_str:  # don't clutter stdout
@@ -152,7 +152,7 @@ def process_dataset(
         if status["state"] in ["done", "error"]:
             break
         time.sleep(.3)  # don't use 100% CPU
-    print()  # new line
+    print("Processing 100% (done)         ")
 
     if status["state"] == "error":
         runner.join(delete_temporary_files=False)
