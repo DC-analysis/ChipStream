@@ -2,6 +2,7 @@ import logging
 import multiprocessing as mp
 import pathlib
 import sys
+import traceback
 
 import click
 import dcnum
@@ -225,26 +226,55 @@ def chipstream_cli(
                     f"to process a single file.", fg="red")
         exit_code = 1
     elif recursive:
-        failed = 0  # keeps track of files that failed to process
+        failed = []  # files that failed to process
+        skipped = []  # files for which the output file already exists
         for pi in sorted(path_in.rglob("*.rtdc")):
             if pi.name.endswith("_dcn.rtdc"):
                 continue
             if path_out is not None:
                 poi = path_out / pi.relative_to(path_in)
-                po = poi.with_name(poi.stem + "_dcn.rtdc")
-                po.parent.mkdir(parents=True, exist_ok=True)
             else:
-                po = None
+                poi = pi
+            po = poi.with_name(poi.stem + "_dcn.rtdc")
+            if po.exists() and not dry_run:
+                # Skip files that have already been processed, so a
+                # batch can be resumed. dcnum only creates the output
+                # file once the pipeline completed successfully.
+                click.secho(f"\nSkipping {pi}, because the output file "
+                            f"'{po}' exists", fg="yellow")
+                skipped.append(pi)
+                continue
             click.secho(f"\nProcessing {pi}")
-            failed += process_dataset(path_in=pi,
-                                      path_out=po,
-                                      **process_kwargs)
+            try:
+                failed_i = process_dataset(path_in=pi,
+                                           path_out=po,
+                                           **process_kwargs)
+            except click.UsageError:
+                # invalid command-line arguments apply to all files
+                raise
+            except click.ClickException as e:
+                click.secho(f"Failed to process {pi}: {e.format_message()}",
+                            fg="red")
+                failed_i = 1
+            except Exception:
+                click.secho(f"Failed to process {pi}:\n"
+                            f"{traceback.format_exc()}",
+                            fg="red")
+                failed_i = 1
+            if failed_i:
+                failed.append(pi)
             if dry_run:
                 click.secho("Stopping dry run after one iteration")
                 break
+        if skipped:
+            click.secho(f"\nSkipped {len(skipped)} file(s) with existing "
+                        f"output", fg="yellow")
         if failed:
-            click.secho(f"Could not process {failed} files", fg="red")
-        exit_code = bool(failed)
+            click.secho(f"\nCould not process {len(failed)} file(s):",
+                        fg="red")
+            for pf in failed:
+                click.secho(f" - {pf}", fg="red")
+        exit_code = int(bool(failed))
     else:
         if path_in.is_dir():
             click.secho(f"PATH_IN must be a file, but '{path_in}' "

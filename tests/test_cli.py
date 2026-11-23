@@ -1,3 +1,4 @@
+import shutil
 import subprocess
 import sys
 
@@ -271,6 +272,78 @@ def test_cli_python_m():
     )
     assert result.returncode == 0, result.stderr
     assert chipstream.__version__ in result.stdout
+
+
+@pytest.mark.parametrize("use_path_out", [True, False])
+def test_cli_recursive_continue_after_failure(cli_runner, tmp_path,
+                                              use_path_out):
+    """A file that fails must not stop the other files from processing"""
+    path = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    dir_in = tmp_path / "in"
+    dir_in.mkdir()
+    # sorted before the valid file
+    (dir_in / "a_bad.rtdc").write_text("hello world")
+    shutil.copy2(path, dir_in / "b_good.rtdc")
+    dir_out = tmp_path / "out" if use_path_out else dir_in
+
+    args = [str(dir_in), "--recursive", "--debug"]
+    if use_path_out:
+        args.append(str(dir_out))
+    result = cli_runner.invoke(cli_main.chipstream_cli, args)
+    assert result.exit_code == 1
+    assert result.stdout.count("Failed to process")
+    assert result.stdout.count("Not a valid input file")
+    assert result.stdout.count("Could not process 1 file(s)")
+    assert not (dir_out / "a_bad_dcn.rtdc").exists()
+    assert (dir_out / "b_good_dcn.rtdc").exists()
+
+
+@pytest.mark.parametrize("use_path_out", [True, False])
+def test_cli_recursive_skip_existing_output(cli_runner, tmp_path,
+                                            use_path_out):
+    """Files with an existing output file are skipped (resume a batch)"""
+    path = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    dir_in = tmp_path / "in"
+    dir_in.mkdir()
+    shutil.copy2(path, dir_in / "a.rtdc")
+    shutil.copy2(path, dir_in / "b.rtdc")
+    dir_out = tmp_path / "out" if use_path_out else dir_in
+    dir_out.mkdir(exist_ok=True)
+    # output of a previous (interrupted) run
+    (dir_out / "a_dcn.rtdc").write_text("previous output")
+
+    args = [str(dir_in), "--recursive", "--debug"]
+    if use_path_out:
+        args.append(str(dir_out))
+    result = cli_runner.invoke(cli_main.chipstream_cli, args)
+    assert result.exit_code == 0
+    assert result.stdout.count("Skipping")
+    assert result.stdout.count("Skipped 1 file(s) with existing output")
+    # existing output is not touched
+    assert (dir_out / "a_dcn.rtdc").read_text() == "previous output"
+    with h5py.File(dir_out / "b_dcn.rtdc") as h5:
+        assert "deform" in h5["events"]
+
+
+def test_cli_recursive_invalid_kwargs(cli_runner, tmp_path):
+    """Invalid command-line arguments abort the batch"""
+    path = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    dir_in = tmp_path / "in"
+    dir_in.mkdir()
+    shutil.copy2(path, dir_in / "a.rtdc")
+    shutil.copy2(path, dir_in / "b.rtdc")
+    result = cli_runner.invoke(cli_main.chipstream_cli,
+                               [str(dir_in), "--recursive", "--debug",
+                                "-ks", "peter=3"])
+    assert result.exit_code == 2
+    assert result.stderr.count("Invalid keyword 'peter' for 'thresh'")
+    # the batch is aborted at the first file
+    assert not result.stdout.count("b.rtdc")
+    assert not (dir_in / "a_dcn.rtdc").exists()
+    assert not (dir_in / "b_dcn.rtdc").exists()
 
 
 def test_cli_recursive_with_file(cli_runner):
