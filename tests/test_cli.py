@@ -13,7 +13,7 @@ pytest.importorskip("click")
 
 import dcnum  # noqa: E402
 import chipstream  # noqa: E402
-from chipstream.cli import cli_main  # noqa: E402
+from chipstream.cli import cli_main, cli_valid  # noqa: E402
 
 
 @pytest.mark.parametrize("drain", [True, False])
@@ -154,6 +154,63 @@ def test_invalid_input_data_bad_format(cli_runner, tmp_path):
                                 ])
     assert result.exit_code == 1
     assert result.stderr.count("Not a valid input file")
+
+
+@pytest.mark.parametrize("args,message", [
+    # missing "="
+    [["-ks", "thresh"], "Expected 'KEY=VALUE', got 'thresh'"],
+    # missing key
+    [["-kb", "=5"], "Expected 'KEY=VALUE', got '=5'"],
+    # only the first "=" separates key and value
+    [["-ks", "thresh=1=2"], "Invalid value '1=2' for keyword 'thresh'"],
+    # unknown keywords
+    [["-ks", "peter=3"], "Invalid keyword 'peter' for 'thresh'"],
+    [["-kb", "peter=3"], "Invalid keyword 'peter' for 'sparsemed'"],
+    [["-kf", "peter=3"], "Invalid keyword 'peter' for 'legacy'"],
+    [["-kg", "peter=3"], "Invalid keyword 'peter' for gating"],
+    # invalid values
+    [["-kb", "kernel_size=abc"], "Invalid value 'abc' for keyword"],
+    [["-kf", "haralick=maybe"], "Invalid value 'maybe' for keyword"],
+    [["-kg", "size_thresh_mask=abc"], "Invalid value 'abc' for keyword"],
+    # None is only allowed if the keyword argument accepts None
+    [["-ks", "thresh=None"], "Invalid value 'None' for keyword"],
+])
+def test_cli_kwargs_invalid(cli_runner, args, message):
+    path = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    result = cli_runner.invoke(cli_main.chipstream_cli,
+                               [str(path), "--dry-run"] + args)
+    assert result.exit_code == 2
+    assert result.stderr.count(f"Invalid value for '{args[0]}'")
+    assert result.stderr.count(message)
+
+
+@pytest.mark.parametrize("value", ["None", "none", "10"])
+def test_cli_kwargs_none(cli_runner, value):
+    """The default "None" shown in the help string must be accepted"""
+    path = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    result = cli_runner.invoke(cli_main.chipstream_cli,
+                               [str(path), "--dry-run",
+                                "-kg", f"size_thresh_mask={value}"])
+    assert result.exit_code == 0
+    assert result.stdout.count("Gate ID:\tnorm:o=0^s=10")
+
+
+def test_cli_kwargs_split_first_equal_sign():
+    assert cli_valid.split_kwargs(["model_file=/path/a=b/m.dcnm",
+                                   "thresh=-3"], "-ks") == [
+        ("model_file", "/path/a=b/m.dcnm"),
+        ("thresh", "-3"),
+    ]
+
+
+def test_cli_kwargs_value_with_equal_sign():
+    pytest.importorskip("torch")
+    kwargs = cli_valid.validate_segmentation_kwargs(
+        "torchmpo", ["model_file=/path/a=b/m.dcnm", "closing_disk=3"])
+    assert kwargs["model_file"] == "/path/a=b/m.dcnm"
+    assert kwargs["kwargs_mask"] == {"closing_disk": 3}
 
 
 @pytest.mark.parametrize("limit_events,dcnum_mapping,dcnum_yield,f0", [
