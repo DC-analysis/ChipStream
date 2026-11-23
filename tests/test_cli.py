@@ -1,3 +1,6 @@
+import subprocess
+import sys
+
 import dcnum.read
 import h5py
 import numpy as np
@@ -199,6 +202,18 @@ def test_cli_limit_events(cli_runner, limit_events, dcnum_yield,
         assert h5.attrs["pipeline:dcnum yield"] == dcnum_yield
         assert h5.attrs["pipeline:dcnum mapping"] == dcnum_mapping
         assert h5.attrs["experiment:event count"] == dcnum_yield
+
+
+def test_cli_python_m():
+    """Run the CLI via `python -m chipstream.cli`"""
+    result = subprocess.run(
+        [sys.executable, "-m", "chipstream.cli", "--version"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert chipstream.__version__ in result.stdout
 
 
 def test_cli_set_pixel_size(cli_runner):
