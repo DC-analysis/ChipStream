@@ -32,6 +32,60 @@ def print_system_info(ctx, param, value):
     ctx.exit()
 
 
+def parse_limit_events(ctx, param, value):
+    """Convert `--limit-events` to an `index_mapping` for dcnum
+
+    Returns `None` (all events), a positive integer (the first N
+    events), or a slice. Values beyond the dataset size are limited
+    to the dataset size by dcnum.
+    """
+    if value is None:
+        return None
+
+    def to_int(val, name):
+        if not val:
+            raise click.BadParameter(
+                f"Missing {name} in '{value}', use 'n' for an open range "
+                f"(negative values are not allowed).", ctx=ctx, param=param)
+        try:
+            ival = int(val)
+        except ValueError:
+            raise click.BadParameter(
+                f"Invalid {name} '{val}' in '{value}', expected a "
+                f"non-negative integer or 'n'.", ctx=ctx, param=param)
+        if ival < 0:
+            raise click.BadParameter(
+                f"Invalid {name} '{val}' in '{value}', negative values "
+                f"are not allowed.", ctx=ctx, param=param)
+        return ival
+
+    value = value.strip()
+    if value.count("-"):
+        vals = value.split("-")
+        if len(vals) not in [2, 3]:
+            raise click.BadParameter(
+                f"Invalid range '{value}', expected 'START-STOP' or "
+                f"'START-STOP-STEP'.", ctx=ctx, param=param)
+        start, stop, step = [
+            None if val == "n" else to_int(val, name)
+            for val, name in zip(vals + ["n"] * (3 - len(vals)),
+                                 ["start", "stop", "step"])]
+        if step == 0:
+            raise click.BadParameter(
+                f"Invalid step in '{value}', the step must not be zero.",
+                ctx=ctx, param=param)
+        if start is not None and stop is not None and start >= stop:
+            raise click.BadParameter(
+                f"Invalid range '{value}', the start must be smaller "
+                f"than the stop.", ctx=ctx, param=param)
+        index_mapping = slice(start, stop, step)
+    elif value == "n":
+        index_mapping = None
+    else:
+        index_mapping = to_int(value, "number of events") or None
+    return index_mapping
+
+
 @click.command(name="chipstream-cli",
                help=f"""
 Segmentation and feature extraction for deformability cytometry data.
@@ -120,12 +174,17 @@ Recursively analyze a directory containing .rtdc files::
 @click.option("-p", "--pixel-size", type=float, default=0,
               help="Set/override the pixel size for feature "
                    "extraction [µm].")
-@click.option("--limit-events", type=str, default="0",
+@click.option("--limit-events", "index_mapping",
+              type=str, default="0", callback=parse_limit_events,
               help="Limit events of events to analyze. This can be either "
                    "a number (e.g. '5000') or a range (e.g. '5000-7000'). "
                    "You can also specify a step size (e.g. '5000-7000-2' for "
                    "every second event). The convention follows Python slices "
-                   "with 'n' substituting for 'None'.")
+                   "with 'n' substituting for 'None' (e.g. '5000-n' for all "
+                   "events starting at 5000). Negative values are not "
+                   "allowed. Values beyond the number of events in the "
+                   "input file are limited to that number. The default "
+                   "'0' analyzes all events.")
 @click.option("--drain-basins", is_flag=True,
               help="Write all basin features from input to output file. This "
                    "option trades computation time and small file size for "
@@ -164,7 +223,7 @@ def chipstream_cli(
     feature_kwargs=None,
     gate_kwargs=None,
     pixel_size=0,
-    limit_events="0",
+    index_mapping=None,
     drain_basins=False,
     compression="zstd-5",
     recursive=False,
@@ -177,22 +236,6 @@ def chipstream_cli(
         click.secho("Running in debug mode (this will be slow)",
                     fg="yellow")
         verbose = True
-
-    # Parse limit_frames to get the HDF5Data index_mapping
-    if limit_events == "0":
-        index_mapping = None
-    elif limit_events.count("-"):
-        vals = limit_events.split("-")
-        assert len(vals) in [2, 3], "slice definition must have length 2 or 3"
-        start = None if vals[0] == "n" else int(vals[0])
-        stop = None if vals[1] == "n" else int(vals[1])
-        if len(vals) == 3:
-            step = None if vals[2] == "n" else int(vals[2])
-        else:
-            step = None
-        index_mapping = slice(start, stop, step)
-    else:
-        index_mapping = int(limit_events)
 
     # Tell the root logger to pretty-print logs
     root_logger = logging.getLogger()

@@ -219,6 +219,15 @@ def test_cli_kwargs_value_with_equal_sign():
     ["0", "0", 36, 1],
     ["1-4", "1-4-n", 6, 2],
     ["3-10-5", "3-10-5", 5, 4],
+    # all events
+    ["00", "0", 36, 1],
+    ["n", "0", 36, 1],
+    # open ranges
+    ["n-4", "n-4-n", 7, 1],
+    ["10-n", "10-n-n", 27, 6],
+    # beyond the dataset size (limited to the dataset size by dcnum)
+    ["1000", "1000", 36, 1],
+    ["10-1000-2", "10-1000-2", 26, 6],
 ])
 def test_cli_limit_events(cli_runner, limit_events, dcnum_yield,
                           dcnum_mapping, f0):
@@ -355,6 +364,46 @@ def test_cli_recursive_with_file(cli_runner):
     assert result.exit_code == 1
     assert result.stdout.count("must be a directory in recursive mode")
     assert not path.with_name(path.stem + "_dcn.rtdc").exists()
+
+
+@pytest.mark.parametrize("limit_events,message", [
+    ["-5", "Missing start in '-5'"],
+    ["5--2", "Missing stop in '5--2'"],
+    ["5-", "Missing stop in '5-'"],
+    ["a", "Invalid number of events 'a'"],
+    ["5-b", "Invalid stop 'b'"],
+    ["5-7-0", "the step must not be zero"],
+    ["5-2", "the start must be smaller than the stop"],
+    ["5-5", "the start must be smaller than the stop"],
+    ["1-2-3-4", "expected 'START-STOP' or 'START-STOP-STEP'"],
+])
+def test_cli_limit_events_invalid(cli_runner, limit_events, message):
+    path = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    result = cli_runner.invoke(cli_main.chipstream_cli,
+                               [str(path),
+                                "--dry-run",
+                                "--limit-events", limit_events,
+                                ])
+    assert result.exit_code == 2
+    assert result.stderr.count("Invalid value for '--limit-events'")
+    assert result.stderr.count(message)
+
+
+@pytest.mark.parametrize("limit_events,index_mapping", [
+    ["0", None],
+    ["00", None],
+    ["n", None],
+    ["5", 5],
+    ["5-n", slice(5, None, None)],
+    ["n-5", slice(None, 5, None)],
+    ["n-n-2", slice(None, None, 2)],
+    ["5-10", slice(5, 10, None)],
+    ["5-10-2", slice(5, 10, 2)],
+])
+def test_cli_limit_events_parse(limit_events, index_mapping):
+    assert cli_main.parse_limit_events(
+        None, None, limit_events) == index_mapping
 
 
 def test_cli_set_pixel_size(cli_runner):
