@@ -1,12 +1,66 @@
 import inspect
+import types
+import typing
 from typing import Any, get_type_hints
 import warnings
 
+import click
 from dcnum.meta import ppid
 import dcnum.read
 import h5py
 
 from . import cli_common as cm
+
+
+def convert_kwarg_value(key: str,
+                        value: str,
+                        dtype: Any,
+                        option: str) -> Any:
+    """Convert a command-line keyword argument value to `dtype`
+
+    The string "None" (case-insensitive) is converted to `None` if
+    `dtype` allows `None`.
+
+    Raises
+    ------
+    click.BadParameter
+        if the value cannot be converted
+    """
+    if (value.lower() == "none"
+            and typing.get_origin(dtype) in {typing.Union, types.UnionType}
+            and type(None) in typing.get_args(dtype)):
+        return None
+    try:
+        return ppid.convert_to_dtype(value, dtype)
+    except (TypeError, ValueError) as e:
+        dtype_name = getattr(dtype, "__name__", str(dtype))
+        raise click.BadParameter(
+            f"Invalid value '{value}' for keyword '{key}' "
+            f"(expected {dtype_name}): {e}",
+            param_hint=f"'{option}'")
+
+
+def split_kwargs(args: list[str], option: str) -> list[tuple[str, str]]:
+    """Split command-line `KEY=VALUE` arguments into key-value pairs
+
+    Only the first "=" separates the key from the value, so the
+    value may contain "=" (e.g. in a file path).
+
+    Raises
+    ------
+    click.BadParameter
+        if an argument has no "=" or an empty key
+    """
+    pairs = []
+    for arg in args or []:
+        key, sep, value = arg.partition("=")
+        key = key.strip()
+        if not sep or not key:
+            raise click.BadParameter(
+                f"Expected 'KEY=VALUE', got '{arg}'",
+                param_hint=f"'{option}'")
+        pairs.append((key, value))
+    return pairs
 
 
 def validate_background_kwargs(bg_method, args):
@@ -18,12 +72,15 @@ def validate_background_kwargs(bg_method, args):
     annot = get_type_hints(bg_cls.check_user_kwargs)
     # Convert the input args to key-value pairs
     kwargs = {}
-    for key, value in [a.split("=") for a in args]:
+    for key, value in split_kwargs(args, "-kb"):
         if key not in valid_kw:
-            raise ValueError(f"Invalid keyword '{key}' for {bg_method}. "
-                             + f"Allowed keywords are {valid_kw}!")
+            raise click.BadParameter(
+                f"Invalid keyword '{key}' for '{bg_method}'. "
+                f"Allowed keywords are {valid_kw}!",
+                param_hint="'-kb'")
         # Convert to correct dtype (default to string)
-        kwargs[key] = ppid.convert_to_dtype(value, annot[key])
+        kwargs[key] = convert_kwarg_value(key, value, annot.get(key, str),
+                                          "-kb")
     return kwargs
 
 
@@ -37,13 +94,15 @@ def validate_feature_kwargs(args: list[str]) -> dict[str, Any]:
     annot = get_type_hints(feat_cls.get_events_from_masks)
     # Convert the input args to key-value pairs
     kwargs = {}
-    for key, value in [a.split("=") for a in args]:
+    for key, value in split_kwargs(args, "-kf"):
         if key in valid_kw:
-            kwargs[key] = ppid.convert_to_dtype(value, annot[key])
+            kwargs[key] = convert_kwarg_value(
+                key, value, annot.get(key, str), "-kf")
         else:
-            raise ValueError(
+            raise click.BadParameter(
                 f"Invalid keyword '{key}' for '{feat_code}'. "
-                f"Allowed keywords are {valid_kw}!")
+                f"Allowed keywords are {valid_kw}!",
+                param_hint="'-kf'")
     return kwargs
 
 
@@ -53,13 +112,15 @@ def validate_gate_kwargs(args: list[str]) -> dict[str, Any]:
     annot = get_type_hints(cm.Gate.__init__)
     # Convert the input args to key-value pairs
     kwargs = {}
-    for key, value in [a.split("=") for a in args]:
+    for key, value in split_kwargs(args, "-kg"):
         if key in valid_kw:
-            kwargs[key] = ppid.convert_to_dtype(value, annot[key])
+            kwargs[key] = convert_kwarg_value(
+                key, value, annot.get(key, str), "-kg")
         else:
-            raise ValueError(
+            raise click.BadParameter(
                 f"Invalid keyword '{key}' for gating. "
-                f"Allowed keywords are {valid_kw} (and box filters)!")
+                f"Allowed keywords are {valid_kw} (and box filters)!",
+                param_hint="'-kg'")
     return kwargs
 
 
@@ -116,14 +177,17 @@ def validate_segmentation_kwargs(seg_method, args):
     # Convert the input args to key-value pairs
     kwargs = {}
     kwargs_mask = {}
-    for key, value in [a.split("=") for a in args]:
+    for key, value in split_kwargs(args, "-ks"):
         if key in valid_kw_mask:
-            kwargs_mask[key] = ppid.convert_to_dtype(value, annot_mask[key])
+            kwargs_mask[key] = convert_kwarg_value(
+                key, value, annot_mask.get(key, str), "-ks")
         elif key in valid_kw:
-            kwargs[key] = ppid.convert_to_dtype(value, annot[key])
+            kwargs[key] = convert_kwarg_value(
+                key, value, annot.get(key, str), "-ks")
         else:
-            raise ValueError(
-                f"Invalid keyword '{key}' for {seg_method}. "
-                f"Allowed keywords are {valid_kw + valid_kw_mask}!")
+            raise click.BadParameter(
+                f"Invalid keyword '{key}' for '{seg_method}'. "
+                f"Allowed keywords are {valid_kw + valid_kw_mask}!",
+                param_hint="'-ks'")
     kwargs["kwargs_mask"] = kwargs_mask
     return kwargs
