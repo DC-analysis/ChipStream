@@ -219,7 +219,12 @@ def chipstream_cli(
         debug=debug,
         )
 
-    if recursive:
+    if recursive and not path_in.is_dir():
+        click.secho(f"PATH_IN must be a directory in recursive mode, but "
+                    f"'{path_in}' is a file. Omit the `--recursive` flag "
+                    f"to process a single file.", fg="red")
+        exit_code = 1
+    elif recursive:
         failed = 0  # keeps track of files that failed to process
         for pi in sorted(path_in.rglob("*.rtdc")):
             if pi.name.endswith("_dcn.rtdc"):

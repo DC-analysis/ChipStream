@@ -216,6 +216,17 @@ def test_cli_python_m():
     assert chipstream.__version__ in result.stdout
 
 
+def test_cli_recursive_with_file(cli_runner):
+    """Recursive mode requires a directory as input"""
+    path = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    result = cli_runner.invoke(cli_main.chipstream_cli,
+                               [str(path), "--recursive"])
+    assert result.exit_code == 1
+    assert result.stdout.count("must be a directory in recursive mode")
+    assert not path.with_name(path.stem + "_dcn.rtdc").exists()
+
+
 def test_cli_set_pixel_size(cli_runner):
     path_temp = retrieve_data(
         "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
