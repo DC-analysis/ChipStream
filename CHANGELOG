@@ -7,10 +7,12 @@
  - enh: cache compiled PyTorch models persistently in the user cache directory (`TORCHINDUCTOR_CACHE_DIR`, only if writable and not set already), so that compiling a model with the "inductor" backend is much faster in later runs
  - enh: add a button for removing segmentation models from the list (#11)
  - enh: show the system-wide CPU and RAM usage in the status bar (#1)
+ - enh: expert settings (Settings menu) for additional keyword arguments of the pipeline steps in the GUI, with a warning in the status bar while they are active (#12)
  - setup: bump dcnum to 0.31.3 (limit `index_mapping` to the dataset size)
  - ref: fix all ruff findings (also in tests and build-recipes)
  - ref: fix pyright findings in the CLI and in `detect_flickering` calls
  - ref: fix pyright findings in the GUI; exclude the generated `*_ui.py` files from pyright
+ - ref: move parsing of `KEY=VALUE` keyword arguments from the CLI to `chipstream.kwargs_parse` (no click dependency)
 0.11.1
  - enh: don't show rounded 100% in CLI progress
  - setup: bump dcnum to 0.31.2

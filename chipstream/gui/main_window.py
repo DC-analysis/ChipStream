@@ -21,10 +21,12 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import QStandardPaths
 from torch.cuda import is_available as cuda_is_available
 
+from .. import kwargs_parse
 from ..path_cache import PathCache
 from .._version import version
 
 from .main_window_ui import Ui_MainWindow
+from .dlg_expert import EXPERT_STEPS, ExpertSettingsDialog
 from .dlg_model_props import TorchModelProperties
 from .manager import ChipStreamJobManager
 from . import splash
@@ -143,6 +145,18 @@ class ChipStream(QtWidgets.QMainWindow):
         self.ui.actionAdd.triggered.connect(self.on_action_add)
         self.ui.actionClear.triggered.connect(self.on_action_clear)
         self.ui.actionQuit.triggered.connect(self.on_action_quit)
+        # Settings menu
+        self.ui.actionExpertSettings.triggered.connect(
+            self.on_action_expert_settings)
+        #: Additional keyword arguments for the pipeline steps (lists of
+        #: "KEY=VALUE" strings, see `EXPERT_STEPS`), only for this session
+        self.expert_kwargs = {key: [] for key, _ in EXPERT_STEPS}
+        self.label_expert_warning = QtWidgets.QLabel(
+            "\u26a0 Expert settings active (Settings \u2192 Expert settings)")
+        self.label_expert_warning.setStyleSheet(
+            "QLabel { color: #b35900; font-weight: bold; }")
+        self.label_expert_warning.setVisible(False)
+        self.ui.statusbar.addWidget(self.label_expert_warning)
         # Help menu
         self.ui.actionDocumentation.triggered.connect(self.on_action_docs)
         self.ui.actionSoftware.triggered.connect(self.on_action_software)
@@ -236,6 +250,13 @@ class ChipStream(QtWidgets.QMainWindow):
         self.append_paths(pathlist)
 
     def get_job_kwargs(self):
+        """Return the job keyword arguments, including expert settings"""
+        job_kwargs = self.get_job_kwargs_basic()
+        self.apply_expert_kwargs(job_kwargs, self.expert_kwargs)
+        return job_kwargs
+
+    def get_job_kwargs_basic(self):
+        """Return the job keyword arguments defined in the main window"""
         # did the user select a pixel size?
         if self.ui.checkBox_pixel_size.isChecked():
             data_kwargs = {
@@ -246,8 +267,11 @@ class ChipStream(QtWidgets.QMainWindow):
 
         # default background computer is "sparsemed"
         bg_default = feat_background.BackgroundSparseMed
-        bg_kwargs = inspect.getfullargspec(
-            bg_default.check_user_kwargs).kwonlydefaults
+        bg_kwargs = dict(inspect.getfullargspec(
+            bg_default.check_user_kwargs).kwonlydefaults or {})
+        # The job manager detects whether offset correction is necessary
+        # for each input file (unless it is set in the expert settings).
+        bg_kwargs.pop("offset_correction", None)
 
         # populate segmenter and its kwargs
         segmenter = self.ui.comboBox_segmenter.currentData()
@@ -284,8 +308,65 @@ class ChipStream(QtWidgets.QMainWindow):
 
         return job_kwargs
 
+    @staticmethod
+    def apply_expert_kwargs(job_kwargs: dict,
+                            expert_kwargs: dict[str, list[str]]):
+        """Update `job_kwargs` in-place with the expert keyword arguments
+
+        Raises
+        ------
+        kwargs_parse.KeywordArgumentError
+            if the expert keyword arguments are invalid (e.g. for the
+            selected segmenter)
+        """
+        bg_code = job_kwargs["background_code"]
+        job_kwargs["background_kwargs"].update(
+            kwargs_parse.parse_background_kwargs(
+                bg_code, expert_kwargs.get("background"),
+                option="background"))
+        seg_args = expert_kwargs.get("segmentation")
+        if seg_args:
+            seg_code = job_kwargs["segmenter_code"]
+            if seg_code not in kwargs_parse.get_segmenters():
+                raise kwargs_parse.KeywordArgumentError(
+                    f"The segmenter '{seg_code}' does not accept keyword "
+                    f"arguments", option="segmentation")
+            seg_kwargs = kwargs_parse.parse_segmentation_kwargs(
+                seg_code, seg_args, option="segmentation")
+            kwargs_mask = seg_kwargs.pop("kwargs_mask")
+            job_kwargs["segmenter_kwargs"].update(seg_kwargs)
+            if kwargs_mask:
+                job_kwargs["segmenter_kwargs"].setdefault(
+                    "kwargs_mask", {}).update(kwargs_mask)
+        job_kwargs["feature_kwargs"].update(
+            kwargs_parse.parse_feature_kwargs(
+                expert_kwargs.get("feature"), option="feature extraction"))
+        job_kwargs["gate_kwargs"].update(
+            kwargs_parse.parse_gate_kwargs(
+                expert_kwargs.get("gate"), option="gating"))
+
     def is_running(self):
         return self.job_manager.is_busy()
+
+    @QtCore.pyqtSlot()
+    def on_action_expert_settings(self):
+        """Let the user edit additional keyword arguments"""
+        def validator(expert_kwargs):
+            self.apply_expert_kwargs(self.get_job_kwargs_basic(),
+                                     expert_kwargs)
+
+        dlg = ExpertSettingsDialog(self, self.expert_kwargs, validator)
+        if dlg.exec():
+            self.set_expert_kwargs(dlg.get_expert_kwargs())
+
+    def set_expert_kwargs(self, expert_kwargs: dict[str, list[str]]):
+        """Set the expert keyword arguments and show/hide the warning"""
+        self.expert_kwargs = {key: list(expert_kwargs.get(key, []))
+                              for key, _ in EXPERT_STEPS}
+        active = [f"{key}: {', '.join(args)}"
+                  for key, args in self.expert_kwargs.items() if args]
+        self.label_expert_warning.setVisible(bool(active))
+        self.label_expert_warning.setToolTip("\n".join(active))
 
     @QtCore.pyqtSlot()
     def on_action_about(self) -> None:
@@ -406,9 +487,17 @@ class ChipStream(QtWidgets.QMainWindow):
         # When we start running, we disable all the controls until we are
         # finished. The user can still add items to the list but not
         # change the pipeline.
+        try:
+            job_kwargs = self.get_job_kwargs()
+        except kwargs_parse.KeywordArgumentError as e:
+            QtWidgets.QMessageBox.critical(
+                self, "Invalid expert settings",
+                f"The expert settings are invalid for the selected "
+                f"pipeline ({e.option}): {e}")
+            return
         self.ui.widget_options.setEnabled(False)
         self.job_manager.run_all_in_thread(
-            job_kwargs=self.get_job_kwargs(),
+            job_kwargs=job_kwargs,
             callback_when_done=self.run_completed.emit)
 
     @QtCore.pyqtSlot()

@@ -246,10 +246,12 @@ class JobWorker(threading.Thread):
     def run_job(self, path_in, path_out):
         job_kwargs = copy.deepcopy(self.job_kwargs)
         # We are using the 'sparsemed' background algorithm by default,
-        # and we would like to perform flickering correction if necessary.
-        with dcnum.read.HDF5Data(path_in) as hd:
-            job_kwargs.setdefault(
-                "background_kwargs", {})["offset_correction"] = \
+        # and we would like to perform flickering correction if necessary
+        # (unless the user specified it explicitly).
+        bg_kwargs = job_kwargs.setdefault("background_kwargs", {})
+        if "offset_correction" not in bg_kwargs:
+            with dcnum.read.HDF5Data(path_in) as hd:
+                bg_kwargs["offset_correction"] = \
                     dcnum.read.detect_flickering(hd)
 
         job = dclogic.DCNumPipelineJob(path_in=path_in,
