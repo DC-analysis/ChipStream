@@ -17,6 +17,10 @@ with this program. If not, see <https://www.gnu.org/licenses/>.
 from dcnum.os_env_st import request_single_threaded
 
 from ._version import __version__, __version_tuple__  # noqa: F401
+from .torch_cache import setup_torch_inductor_cache_dir
 
 
 request_single_threaded()
+# Cache compiled PyTorch models persistently (set before dcnum spawns
+# its worker processes, which inherit the environment).
+setup_torch_inductor_cache_dir()
