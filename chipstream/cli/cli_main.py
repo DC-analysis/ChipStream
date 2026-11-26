@@ -246,22 +246,22 @@ def chipstream_cli(
 
     mp.freeze_support()
 
-    process_kwargs = dict(
-        background_method=background_method,
-        background_kwargs=background_kwargs,
-        segmentation_method=segmentation_method,
-        segmentation_kwargs=segmentation_kwargs,
-        feature_kwargs=feature_kwargs,
-        gate_kwargs=gate_kwargs,
-        pixel_size=pixel_size,
-        index_mapping=index_mapping,
+    process_kwargs = {
+        "background_method": background_method,
+        "background_kwargs": background_kwargs,
+        "segmentation_method": segmentation_method,
+        "segmentation_kwargs": segmentation_kwargs,
+        "feature_kwargs": feature_kwargs,
+        "gate_kwargs": gate_kwargs,
+        "pixel_size": pixel_size,
+        "index_mapping": index_mapping,
         # Below this line are arguments that do not define the pipeline ID
-        basin_strategy="drain" if drain_basins else "tap",
-        compression=compression,
-        num_cpus=num_cpus or cpu_count(),
-        dry_run=dry_run,
-        debug=debug,
-        )
+        "basin_strategy": "drain" if drain_basins else "tap",
+        "compression": compression,
+        "num_cpus": num_cpus or cpu_count(),
+        "dry_run": dry_run,
+        "debug": debug,
+    }
 
     if recursive and not path_in.is_dir():
         click.secho(f"PATH_IN must be a directory in recursive mode, but "
