@@ -1,3 +1,4 @@
+import pathlib
 import time
 
 import dcnum.read
@@ -170,9 +171,11 @@ def test_gui_segm_torch_model_remove(mw, qtbot, monkeypatch):
     key = "segm/torch_model_files_removed"
     removed_orig = mw.settings.value(key, [], type=list)
 
-    def model_names(window):
+    def model_paths(window):
+        # Compare full paths: other tests may have added models with
+        # the same name from other directories.
         cb = window.ui.comboBox_torch_model
-        return [cb.itemData(ii).name for ii in range(cb.count())
+        return [pathlib.Path(cb.itemData(ii)) for ii in range(cb.count())
                 if cb.itemData(ii) is not None]
 
     try:
@@ -182,28 +185,28 @@ def test_gui_segm_torch_model_remove(mw, qtbot, monkeypatch):
         for _ in range(2):
             qtbot.mouseClick(mw.ui.toolButton_torch_add,
                              QtCore.Qt.MouseButton.LeftButton)
-        assert model_names(mw).count(path_model.name) == 1
+        assert model_paths(mw).count(path_model) == 1
         assert mw.ui.toolButton_torch_remove.isEnabled()
 
         # select and remove the model
         cb = mw.ui.comboBox_torch_model
-        cb.setCurrentIndex(model_names(mw).index(path_model.name))
+        cb.setCurrentIndex(model_paths(mw).index(path_model))
         qtbot.mouseClick(mw.ui.toolButton_torch_remove,
                          QtCore.Qt.MouseButton.LeftButton)
-        assert path_model.name not in model_names(mw)
+        assert path_model not in model_paths(mw)
         assert str(path_model) in mw.get_removed_torch_models()
         assert path_model.exists(), "the model file must not be deleted"
 
         # the model is not listed in a new session
         mw2 = ChipStream()
         qtbot.addWidget(mw2)
-        assert path_model.name not in model_names(mw2)
+        assert path_model not in model_paths(mw2)
         mw2.close()
 
         # adding the model again lists it again
         qtbot.mouseClick(mw.ui.toolButton_torch_add,
                          QtCore.Qt.MouseButton.LeftButton)
-        assert model_names(mw).count(path_model.name) == 1
+        assert model_paths(mw).count(path_model) == 1
         assert str(path_model) not in mw.get_removed_torch_models()
     finally:
         mw.set_removed_torch_models(set(removed_orig))
