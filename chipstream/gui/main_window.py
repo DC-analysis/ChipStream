@@ -7,6 +7,7 @@ import importlib.resources
 import inspect
 import logging
 import pathlib
+import re
 import signal
 import sys
 import time
@@ -112,7 +113,9 @@ class ChipStream(QtWidgets.QMainWindow):
         # Do not show models that the user removed from the list
         removed_models = self.get_removed_torch_models()
         available_models = sorted(
-            p for p in set(available_models) if str(p) not in removed_models)
+            (p for p in set(available_models)
+             if str(p) not in removed_models),
+            key=torch_model_sort_key)
         if available_models:
             self.ui.comboBox_torch_model.clear()
             self.ui.comboBox_torch_model.setEnabled(True)
@@ -544,8 +547,17 @@ class ChipStream(QtWidgets.QMainWindow):
                 self.ui.comboBox_torch_model.clear()
             cb = self.ui.comboBox_torch_model
             # `findData` does not compare `pathlib.Path` objects by value
-            if path not in [cb.itemData(ii) for ii in range(cb.count())]:
-                cb.addItem(path.stem, path)
+            paths = [cb.itemData(ii) for ii in range(cb.count())]
+            if path not in paths:
+                # Insert the model at its sorted position
+                key = torch_model_sort_key(path)
+                for idx, other in enumerate(paths):
+                    if (other is not None
+                            and key < torch_model_sort_key(other)):
+                        cb.insertItem(idx, path.stem, path)
+                        break
+                else:
+                    cb.addItem(path.stem, path)
             self.ui.comboBox_torch_model.setEnabled(True)
             self.ui.toolButton_torch_info.setEnabled(True)
             self.ui.toolButton_torch_remove.setEnabled(True)
@@ -597,6 +609,19 @@ class ChipStream(QtWidgets.QMainWindow):
         model_file = self.ui.comboBox_torch_model.currentData()
         dlg = TorchModelProperties(self, model_file)
         dlg.exec()
+
+
+def torch_model_sort_key(path: pathlib.Path) -> tuple:
+    """Key for sorting model files by name (case-insensitive, natural)
+
+    Numbers in the file name are compared by value, so that e.g.
+    "model_2" comes before "model_10". The full path is used for
+    sorting models with the same name.
+    """
+    parts = re.split(r"(\d+)", pathlib.Path(path).stem.lower())
+    name_key = [(0, int(pp), "") if pp.isdigit() else (1, 0, pp)
+                for pp in parts if pp]
+    return name_key, str(path)
 
 
 @functools.lru_cache(maxsize=100)

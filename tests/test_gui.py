@@ -1,5 +1,6 @@
 import pathlib
 import re
+import shutil
 import time
 
 import dcnum.read
@@ -411,3 +412,37 @@ def test_gui_expert_kwargs_run(mw):
         assert h5.attrs["pipeline:dcnum segmenter"] \
             == "thresh:t=-4:cle=1^f=1^clo=3"
         assert h5.attrs["pipeline:dcnum feature"] == "legacy:b=1^h=0^v=1"
+
+
+def test_gui_segm_torch_models_sorted(mw, qtbot, monkeypatch, tmp_path):
+    """The model list is sorted by name (case-insensitive, natural)"""
+    path_model = retrieve_model(
+        "segm-torch-model_unet-dcnum-test_g1_910c2.zip")
+    names = ["model_10", "Model_2", "beta", "Alpha", "model_1"]
+    paths = []
+    for name in names:
+        pp = tmp_path / f"{name}.dcnm"
+        shutil.copy2(path_model, pp)
+        paths.append(pp)
+
+    def listed_names(window):
+        cb = window.ui.comboBox_torch_model
+        return [pathlib.Path(cb.itemData(ii)).stem
+                for ii in range(cb.count())
+                if cb.itemData(ii) is not None
+                and pathlib.Path(cb.itemData(ii)).parent == tmp_path]
+
+    expected = ["Alpha", "beta", "model_1", "Model_2", "model_10"]
+    # add the models one by one in unsorted order
+    for pp in paths:
+        monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileNames",
+                            lambda *args, pp=pp: ([str(pp)], ""))
+        qtbot.mouseClick(mw.ui.toolButton_torch_add,
+                         QtCore.Qt.MouseButton.LeftButton)
+    assert listed_names(mw) == expected
+
+    # the list is also sorted in a new session
+    mw2 = ChipStream()
+    qtbot.addWidget(mw2)
+    assert listed_names(mw2) == expected
+    mw2.close()
