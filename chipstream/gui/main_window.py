@@ -31,7 +31,8 @@ from . import splash
 
 
 class ChipStream(QtWidgets.QMainWindow):
-    run_completed = QtCore.pyqtSignal()
+    # The PyQt6 stubs do not define a default for `arguments`.
+    run_completed = QtCore.pyqtSignal()  # pyright: ignore[reportCallIssue]
 
     def __init__(self, *arguments):
         """Initialize ChipStream GUI
@@ -414,9 +415,11 @@ class ChipStream(QtWidgets.QMainWindow):
         old_text = self.ui.textBrowser.toPlainText()
         if info != old_text:
             sb = self.ui.textBrowser.verticalScrollBar()
-            is_at_end = sb.maximum() - sb.value() <= 10
+            is_at_end = sb is not None and sb.maximum() - sb.value() <= 10
             self.ui.textBrowser.setText(info)
-            if info.strip().startswith(old_text.strip()) and is_at_end:
+            if (sb is not None
+                    and info.strip().startswith(old_text.strip())
+                    and is_at_end):
                 # Automatically scroll to the bottom
                 sb.setValue(sb.maximum())
 
@@ -504,7 +507,7 @@ def excepthook(etype, value, trace):
 def get_main() -> ChipStream:
     app = QtWidgets.QApplication.instance()
     for widget in app.topLevelWidgets():
-        if isinstance(widget, QtWidgets.QMainWindow):
+        if isinstance(widget, ChipStream):
             return widget
     raise ValueError("Main instance not found!")
 
