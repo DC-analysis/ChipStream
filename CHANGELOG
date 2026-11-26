@@ -6,6 +6,7 @@
  - fix: invalid `--limit-events` values of `chipstream-cli` caused misleading errors or tracebacks; open ranges (e.g. `5-n`) and values beyond the dataset size are now supported
  - enh: cache compiled PyTorch models persistently in the user cache directory (`TORCHINDUCTOR_CACHE_DIR`, only if writable and not set already), so that compiling a model with the "inductor" backend is much faster in later runs
  - setup: bump dcnum to 0.31.3 (limit `index_mapping` to the dataset size)
+ - ref: fix all ruff findings (also in tests and build-recipes)
 0.11.1
  - enh: don't show rounded 100% in CLI progress
  - setup: bump dcnum to 0.31.2

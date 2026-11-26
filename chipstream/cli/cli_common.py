@@ -1,4 +1,5 @@
 import logging
+from typing import ClassVar
 
 from dcnum.feat.feat_background import (  # noqa: F401
     get_available_background_methods
@@ -16,7 +17,7 @@ class PrettyFormatter(logging.Formatter):
     reset = "\x1b[0m"
     format = "%(levelname)s %(name)s: %(message)s"
 
-    FORMATS = {
+    FORMATS: ClassVar[dict[int, str]] = {
         logging.DEBUG: grey + format + reset,
         logging.INFO: grey + format + reset,
         logging.WARNING: yellow + format + reset,
