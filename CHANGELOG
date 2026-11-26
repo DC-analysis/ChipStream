@@ -3,6 +3,7 @@
  - fix: `chipstream-cli --recursive` silently did nothing when PATH_IN is a file
  - fix: malformed `-ks`/`-kb`/`-kf`/`-kg` arguments of `chipstream-cli` caused tracebacks; values could not contain "=" and "None" was not accepted
  - fix: `chipstream-cli --recursive` stopped at the first file that failed and aborted when an output file already existed; now it continues, reports failed files, and skips files with existing output
+ - enh: cache compiled PyTorch models persistently in the user cache directory (`TORCHINDUCTOR_CACHE_DIR`, only if writable and not set already), so that compiling a model with the "inductor" backend is much faster in later runs
 0.11.1
  - enh: don't show rounded 100% in CLI progress
  - setup: bump dcnum to 0.31.2
