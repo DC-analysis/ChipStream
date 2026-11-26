@@ -57,6 +57,10 @@ packages = ["chipstream"]
 write_to = "chipstream/_version.py"
 version_scheme = "post-release"
 
+[tool.pyright]
+# generated with ui/run_uic.sh (pyuic6)
+exclude = ["chipstream/gui/*_ui.py"]
+
 [tool.ruff.lint]
 ignore = [
     # Do not organize imports (we have our own scheme)

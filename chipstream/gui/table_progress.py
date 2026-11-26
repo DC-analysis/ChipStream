@@ -2,7 +2,8 @@ from PyQt6 import QtCore, QtWidgets
 
 
 class ProgressTable(QtWidgets.QTableWidget):
-    row_selected = QtCore.pyqtSignal(int)
+    # The PyQt6 stubs do not define a default for `arguments`.
+    row_selected = QtCore.pyqtSignal(int)  # pyright: ignore[reportCallIssue]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -48,7 +49,7 @@ class ProgressTable(QtWidgets.QTableWidget):
         """Get/Create a QProgressBar at the specified position
         """
         pb = self.cellWidget(row, col)
-        if pb is None:
+        if not isinstance(pb, QtWidgets.QProgressBar):
             pb = QtWidgets.QProgressBar(self)
             pb.setMaximum(1000)
             self.setCellWidget(row, col, pb)
@@ -77,8 +78,10 @@ class ProgressTable(QtWidgets.QTableWidget):
         if self.job_manager:
             for ii in range(len(self.job_manager)):
                 st = self.item(ii, 1)
-                st.setText(self.job_manager[ii]["state"])
+                if st is not None:
+                    st.setText(self.job_manager[ii]["state"])
                 pb = self.cellWidget(ii, 2)
                 progress = self.job_manager[ii]["progress"]
-                if pb is not None and pb.value() != int(progress*1000):
+                if (isinstance(pb, QtWidgets.QProgressBar)
+                        and pb.value() != int(progress*1000)):
                     pb.setValue(int(progress*1000))

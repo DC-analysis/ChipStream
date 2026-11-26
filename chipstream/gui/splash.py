@@ -2,7 +2,8 @@ import os
 
 
 try:
-    import pyi_splash
+    # only available in PyInstaller builds
+    import pyi_splash  # pyright: ignore[reportMissingModuleSource]
 except (ImportError, ModuleNotFoundError):
     pyi_splash = None
 
