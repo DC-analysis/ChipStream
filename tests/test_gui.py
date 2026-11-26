@@ -356,7 +356,7 @@ def test_gui_expert_kwargs_invalid(mw, monkeypatch):
     assert len(messages) == 1
     assert messages[0].count("Invalid keyword 'model_file' for 'thresh'")
     assert not mw.job_manager.is_busy()
-    assert mw.ui.widget_options.isEnabled()
+    assert mw.ui.pushButton_run.isEnabled()
 
 
 def test_gui_expert_kwargs_dialog(mw, monkeypatch):
@@ -446,3 +446,33 @@ def test_gui_segm_torch_models_sorted(mw, qtbot, monkeypatch, tmp_path):
     qtbot.addWidget(mw2)
     assert listed_names(mw2) == expected
     mw2.close()
+
+
+def test_gui_pause_button(mw, qtbot):
+    """The pause button is shown while running and pauses the jobs"""
+    path = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    mw.append_paths([path])
+    assert not mw.ui.pushButton_pause.isVisibleTo(mw)
+    mw.on_run()
+    assert mw.ui.pushButton_pause.isVisibleTo(mw)
+    assert not mw.ui.pushButton_run.isEnabled()
+    assert not mw.ui.groupBox_4.isEnabled()
+
+    qtbot.mouseClick(mw.ui.pushButton_pause,
+                     QtCore.Qt.MouseButton.LeftButton)
+    try:
+        assert mw.job_manager.is_paused()
+        assert mw.ui.pushButton_pause.text() == "Resume"
+    finally:
+        qtbot.mouseClick(mw.ui.pushButton_pause,
+                         QtCore.Qt.MouseButton.LeftButton)
+    assert not mw.job_manager.is_paused()
+    assert mw.ui.pushButton_pause.text() == "Pause"
+
+    while mw.job_manager.is_busy():
+        time.sleep(.1)
+    qtbot.waitUntil(lambda: mw.ui.pushButton_run.isEnabled(), timeout=5000)
+    assert not mw.ui.pushButton_pause.isVisibleTo(mw)
+    assert mw.ui.groupBox_4.isEnabled()
+    assert path.with_name(path.stem + "_dcn.rtdc").exists()

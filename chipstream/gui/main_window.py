@@ -167,6 +167,8 @@ class ChipStream(QtWidgets.QMainWindow):
 
         # Command button
         self.ui.pushButton_run.clicked.connect(self.on_run)
+        self.ui.pushButton_pause.setVisible(False)
+        self.ui.pushButton_pause.toggled.connect(self.on_pause)
 
         # Path selection
         cache_loc = pathlib.Path(
@@ -498,14 +500,40 @@ class ChipStream(QtWidgets.QMainWindow):
                 f"The expert settings are invalid for the selected "
                 f"pipeline ({e.option}): {e}")
             return
-        self.ui.widget_options.setEnabled(False)
+        self.set_options_enabled(False)
         self.job_manager.run_all_in_thread(
             job_kwargs=job_kwargs,
             callback_when_done=self.run_completed.emit)
 
+    @QtCore.pyqtSlot(bool)
+    def on_pause(self, pause):
+        """Pause or resume the analysis"""
+        if pause:
+            self.job_manager.pause()
+            self.ui.pushButton_pause.setText("Resume")
+        else:
+            self.job_manager.resume()
+            self.ui.pushButton_pause.setText("Pause")
+
     @QtCore.pyqtSlot()
     def on_run_completed(self):
-        self.ui.widget_options.setEnabled(True)
+        self.set_options_enabled(True)
+
+    def set_options_enabled(self, enabled: bool):
+        """Enable the pipeline options (disabled while running)
+
+        While the pipeline is running, the options and the "Run"
+        button are disabled and the "Pause" button is shown.
+        """
+        for widget in [self.ui.groupBox_4,
+                       self.ui.groupBox_5,
+                       self.ui.groupBox_6,
+                       self.ui.pushButton_run]:
+            widget.setEnabled(enabled)
+        if enabled:
+            # make sure nothing stays suspended
+            self.ui.pushButton_pause.setChecked(False)
+        self.ui.pushButton_pause.setVisible(not enabled)
 
     @QtCore.pyqtSlot(int)
     def on_select_job(self, row):

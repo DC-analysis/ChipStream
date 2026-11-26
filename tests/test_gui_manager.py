@@ -1,5 +1,7 @@
 import shutil
+import time
 
+import psutil
 import pytest
 
 from dcnum.meta import ppid
@@ -98,6 +100,37 @@ def test_manager_run_defaults():
                                      "thresh:t=-6:cle=1^f=1^clo=2|"
                                      "legacy:b=1^h=1^v=1|"
                                      "norm:o=0^s=10")
+
+
+def test_manager_pause_resume():
+    """Pausing suspends all child processes until the job is resumed"""
+    path = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+
+    mg = manager.ChipStreamJobManager()
+    mg.add_path(path)
+    # pause right away: child processes started later are suspended, too
+    mg.pause()
+    assert mg.is_paused()
+    mg.run_all_in_thread(job_kwargs={"debug": False, "num_procs": 2})
+    try:
+        time.sleep(10)
+        # the job cannot finish while it is paused
+        assert mg.is_busy()
+        assert mg[0]["state"] == "paused"
+        progress = mg[0]["progress"]
+        children = psutil.Process().children(recursive=True)
+        assert children, "dcnum should have started worker processes"
+        for child in children:
+            assert child.status() == psutil.STATUS_STOPPED
+        time.sleep(2)
+        assert mg[0]["progress"] == progress
+    finally:
+        mg.resume()
+    assert not mg.is_paused()
+    mg.join()
+    assert mg[0]["state"] == "done"
+    assert mg[0]["progress"] == 1
 
 
 def test_manager_run_error_wrong_model():
