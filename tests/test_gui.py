@@ -305,3 +305,109 @@ def test_gui_sys_usage(mw):
     text = label.text()
     assert re.match(r"CPU \d+%   RAM \d+\.\d / \d+\.\d GiB \(\d+%\)$",
                     text), text
+
+
+def test_gui_expert_kwargs_job_kwargs(mw):
+    """Expert keyword arguments end up in the job keyword arguments"""
+    mw.ui.comboBox_segmenter.setCurrentIndex(
+        mw.ui.comboBox_segmenter.findData("thresh"))
+    assert not mw.label_expert_warning.isVisibleTo(mw)
+    mw.set_expert_kwargs({
+        "background": ["kernel_size=150", "offset_correction=false"],
+        "segmentation": ["thresh=-4", "closing_disk=3"],
+        "feature": ["haralick=False"],
+        "gate": ["size_thresh_mask=5"],
+    })
+    assert mw.label_expert_warning.isVisibleTo(mw)
+    assert mw.label_expert_warning.toolTip().count("thresh=-4")
+
+    job_kwargs = mw.get_job_kwargs()
+    assert job_kwargs["background_kwargs"]["kernel_size"] == 150
+    assert job_kwargs["background_kwargs"]["offset_correction"] is False
+    # expert settings override the settings in the main window
+    assert job_kwargs["segmenter_kwargs"]["thresh"] == -4
+    assert job_kwargs["segmenter_kwargs"]["kwargs_mask"] == {
+        "closing_disk": 3}
+    assert job_kwargs["feature_kwargs"]["haralick"] is False
+    assert job_kwargs["gate_kwargs"] == {"size_thresh_mask": 5}
+
+    # removing all expert settings hides the warning
+    mw.set_expert_kwargs({})
+    assert not mw.label_expert_warning.isVisibleTo(mw)
+    job_kwargs = mw.get_job_kwargs()
+    assert "offset_correction" not in job_kwargs["background_kwargs"]
+    assert job_kwargs["gate_kwargs"] == {}
+
+
+def test_gui_expert_kwargs_invalid(mw, monkeypatch):
+    """Invalid expert settings for the selected segmenter prevent a run"""
+    path = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    mw.append_paths([path])
+    mw.ui.comboBox_segmenter.setCurrentIndex(
+        mw.ui.comboBox_segmenter.findData("thresh"))
+    # valid for the torch segmenters, but not for thresholding
+    mw.set_expert_kwargs({"segmentation": ["model_file=model.dcnm"]})
+    messages = []
+    monkeypatch.setattr(QtWidgets.QMessageBox, "critical",
+                        lambda *args: messages.append(args[2]))
+    mw.on_run()
+    assert len(messages) == 1
+    assert messages[0].count("Invalid keyword 'model_file' for 'thresh'")
+    assert not mw.job_manager.is_busy()
+    assert mw.ui.widget_options.isEnabled()
+
+
+def test_gui_expert_kwargs_dialog(mw, monkeypatch):
+    """The dialog validates the keyword arguments when OK is clicked"""
+    from chipstream.gui.dlg_expert import ExpertSettingsDialog
+    mw.ui.comboBox_segmenter.setCurrentIndex(
+        mw.ui.comboBox_segmenter.findData("thresh"))
+    warnings = []
+    monkeypatch.setattr(QtWidgets.QMessageBox, "warning",
+                        lambda *args: warnings.append(args[2]))
+
+    def validator(expert_kwargs):
+        mw.apply_expert_kwargs(mw.get_job_kwargs_basic(), expert_kwargs)
+
+    dlg = ExpertSettingsDialog(mw, {"gate": ["size_thresh_mask=5"]},
+                               validator)
+    assert dlg.edits["gate"].toPlainText() == "size_thresh_mask=5"
+    # invalid value: the dialog stays open
+    dlg.edits["segmentation"].setPlainText("thresh=abc")
+    dlg.accept()
+    assert dlg.result() != QtWidgets.QDialog.DialogCode.Accepted
+    assert warnings[0].count("Invalid value 'abc' for keyword 'thresh'")
+    # valid values (empty lines and comments are ignored)
+    dlg.edits["segmentation"].setPlainText("# comment\n\nthresh=-3\n")
+    dlg.accept()
+    assert dlg.result() == QtWidgets.QDialog.DialogCode.Accepted
+    assert dlg.get_expert_kwargs() == {
+        "background": [],
+        "segmentation": ["thresh=-3"],
+        "feature": [],
+        "gate": ["size_thresh_mask=5"],
+    }
+
+
+def test_gui_expert_kwargs_run(mw):
+    """The expert settings are used in the pipeline"""
+    path = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    mw.append_paths([path])
+    mw.ui.comboBox_segmenter.setCurrentIndex(
+        mw.ui.comboBox_segmenter.findData("thresh"))
+    mw.set_expert_kwargs({
+        "background": ["offset_correction=true"],
+        "segmentation": ["thresh=-4", "closing_disk=3"],
+        "feature": ["haralick=False"],
+    })
+    mw.on_run()
+    while mw.job_manager.is_busy():
+        time.sleep(.1)
+    out_path = path.with_name(path.stem + "_dcn.rtdc")
+    with h5py.File(out_path) as h5:
+        assert h5.attrs["pipeline:dcnum background"].endswith("^o=1")
+        assert h5.attrs["pipeline:dcnum segmenter"] \
+            == "thresh:t=-4:cle=1^f=1^clo=3"
+        assert h5.attrs["pipeline:dcnum feature"] == "legacy:b=1^h=0^v=1"

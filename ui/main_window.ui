@@ -546,7 +546,14 @@
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="actionExpertSettings"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuSettings"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -583,6 +590,11 @@
   <action name="actionClear">
    <property name="text">
     <string>Clear list</string>
+   </property>
+  </action>
+  <action name="actionExpertSettings">
+   <property name="text">
+    <string>Expert settings...</string>
    </property>
   </action>
  </widget>
