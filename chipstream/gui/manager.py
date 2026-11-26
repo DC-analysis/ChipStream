@@ -250,7 +250,7 @@ class JobWorker(threading.Thread):
         with dcnum.read.HDF5Data(path_in) as hd:
             job_kwargs.setdefault(
                 "background_kwargs", {})["offset_correction"] = \
-                    dcnum.read.detect_flickering(hd.image)
+                    dcnum.read.detect_flickering(hd)
 
         job = dclogic.DCNumPipelineJob(path_in=path_in,
                                        path_out=path_out,

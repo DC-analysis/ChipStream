@@ -17,7 +17,7 @@ from .cli_valid import (
 
 def process_dataset(
     path_in: pathlib.Path,
-    path_out: pathlib.Path,
+    path_out: pathlib.Path | None,
     background_method: str,
     background_kwargs: list[str],
     segmentation_method: str,
@@ -72,7 +72,7 @@ def process_dataset(
         # correction. Thus, we automatically check whether we need that.
         with dcnum.read.HDF5Data(path_in) as hd:
             bg_kwargs_dict["offset_correction"] = \
-                dcnum.read.detect_flickering(hd.image)
+                dcnum.read.detect_flickering(hd)
     bg_cls = cm.get_available_background_methods()[background_method]
     bg_id = bg_cls.get_ppid_from_ppkw(bg_kwargs_dict)
     click.echo(f"Background ID:\t{bg_id}")
@@ -156,7 +156,8 @@ def process_dataset(
 
     if status["state"] == "error":
         runner.join(delete_temporary_files=False)
-        raise click.ClickException(runner.error_tb)
+        raise click.ClickException(
+            runner.error_tb or f"Processing '{path_in}' failed")
     else:
         runner.join(delete_temporary_files=True)
         return 0
