@@ -1,4 +1,5 @@
 import pathlib
+import re
 import time
 
 import dcnum.read
@@ -293,3 +294,14 @@ def test_gui_use_volume(mw, use_volume):
                            0.666,
                            atol=0, rtol=1e-5)
         assert ("volume" in h5["events"]) == use_volume
+
+
+def test_gui_sys_usage(mw):
+    """CPU and RAM usage are shown in the status bar"""
+    label = mw.label_sys_usage
+    assert label in mw.ui.statusbar.findChildren(QtWidgets.QLabel)
+    assert label.timer.isActive()
+    label.update_usage()
+    text = label.text()
+    assert re.match(r"CPU \d+%   RAM \d+\.\d / \d+\.\d GiB \(\d+%\)$",
+                    text), text

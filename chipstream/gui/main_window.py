@@ -28,6 +28,7 @@ from .main_window_ui import Ui_MainWindow
 from .dlg_model_props import TorchModelProperties
 from .manager import ChipStreamJobManager
 from . import splash
+from .sys_usage import SystemUsageLabel
 
 
 class ChipStream(QtWidgets.QMainWindow):
@@ -181,6 +182,10 @@ class ChipStream(QtWidgets.QMainWindow):
         self.timer.timeout.connect(
             self.ui.tableWidget_input.on_selection_changed)
         self.timer.start(1000)
+
+        # Show the CPU and RAM usage in the status bar
+        self.label_sys_usage = SystemUsageLabel(self)
+        self.ui.statusbar.addPermanentWidget(self.label_sys_usage)
 
         splash.splash_close()
 
