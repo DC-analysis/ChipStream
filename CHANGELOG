@@ -5,6 +5,7 @@
  - fix: `chipstream-cli --recursive` stopped at the first file that failed and aborted when an output file already existed; now it continues, reports failed files, and skips files with existing output
  - fix: invalid `--limit-events` values of `chipstream-cli` caused misleading errors or tracebacks; open ranges (e.g. `5-n`) and values beyond the dataset size are now supported
  - enh: cache compiled PyTorch models persistently in the user cache directory (`TORCHINDUCTOR_CACHE_DIR`, only if writable and not set already), so that compiling a model with the "inductor" backend is much faster in later runs
+ - enh: add a button for removing segmentation models from the list (#11)
  - setup: bump dcnum to 0.31.3 (limit `index_mapping` to the dataset size)
  - ref: fix all ruff findings (also in tests and build-recipes)
  - ref: fix pyright findings in the CLI and in `detect_flickering` calls

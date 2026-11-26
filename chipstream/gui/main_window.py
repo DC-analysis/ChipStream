@@ -106,11 +106,15 @@ class ChipStream(QtWidgets.QMainWindow):
         for pdir in dcnum_paths.search_path_registry.get("torch_model_files",
                                                          []):
             available_models += [p for p in pdir.glob("*.dcnm")]
-        available_models = sorted(set(available_models))
+        # Do not show models that the user removed from the list
+        removed_models = self.get_removed_torch_models()
+        available_models = sorted(
+            p for p in set(available_models) if str(p) not in removed_models)
         if available_models:
             self.ui.comboBox_torch_model.clear()
             self.ui.comboBox_torch_model.setEnabled(True)
             self.ui.toolButton_torch_info.setEnabled(True)
+            self.ui.toolButton_torch_remove.setEnabled(True)
             for mpath in available_models:
                 self.ui.comboBox_torch_model.addItem(mpath.stem, mpath)
             default_segmenter = "torch"
@@ -118,6 +122,8 @@ class ChipStream(QtWidgets.QMainWindow):
             default_segmenter = "thresh"
         self.ui.toolButton_torch_add.clicked.connect(self.on_torch_model_add)
         self.ui.toolButton_torch_info.clicked.connect(self.on_torch_model_info)
+        self.ui.toolButton_torch_remove.clicked.connect(
+            self.on_torch_model_remove)
 
         self.ui.comboBox_segmenter.blockSignals(False)
         self.ui.comboBox_segmenter.setCurrentIndex(
@@ -432,19 +438,64 @@ class ChipStream(QtWidgets.QMainWindow):
             '',
             'Model files (*.dcnm)')
         cur_mod_paths = self.settings.value("segm/torch_model_files", [])
+        removed_models = self.get_removed_torch_models()
         for path in pathlist:
             path = pathlib.Path(path)
             dcnum_paths.register_search_path("torch_model_files",
                                              path.parent)
             cur_mod_paths.append(str(path.parent))
+            # A model that was removed earlier is shown again
+            removed_models.discard(str(path))
             if not self.ui.comboBox_torch_model.isEnabled():
                 self.ui.comboBox_torch_model.clear()
-            self.ui.comboBox_torch_model.addItem(path.stem, path)
+            cb = self.ui.comboBox_torch_model
+            # `findData` does not compare `pathlib.Path` objects by value
+            if path not in [cb.itemData(ii) for ii in range(cb.count())]:
+                cb.addItem(path.stem, path)
             self.ui.comboBox_torch_model.setEnabled(True)
             self.ui.toolButton_torch_info.setEnabled(True)
+            self.ui.toolButton_torch_remove.setEnabled(True)
         cur_mod_paths = sorted(set(cur_mod_paths))
         if cur_mod_paths:
             self.settings.setValue("segm/torch_model_files", cur_mod_paths)
+        self.set_removed_torch_models(removed_models)
+
+    @QtCore.pyqtSlot()
+    def on_torch_model_remove(self):
+        """Remove the selected model from the list of models
+
+        The model file is not deleted. Since the directories of the
+        model files are remembered (and all models in them are listed),
+        the removed model is stored in the settings, so that it is not
+        listed in the next session. Adding the model again with
+        :func:`on_torch_model_add` lists it again.
+        """
+        idx = self.ui.comboBox_torch_model.currentIndex()
+        path = self.ui.comboBox_torch_model.currentData()
+        if idx < 0 or path is None:
+            return
+        self.ui.comboBox_torch_model.removeItem(idx)
+        removed_models = self.get_removed_torch_models()
+        removed_models.add(str(path))
+        self.set_removed_torch_models(removed_models)
+        if self.ui.comboBox_torch_model.count() == 0:
+            self.ui.comboBox_torch_model.addItem("No models available")
+            self.ui.comboBox_torch_model.setEnabled(False)
+            self.ui.toolButton_torch_info.setEnabled(False)
+            self.ui.toolButton_torch_remove.setEnabled(False)
+
+    def get_removed_torch_models(self) -> set[str]:
+        """Return the paths of the models the user removed from the list"""
+        return set(self.settings.value("segm/torch_model_files_removed", [],
+                                       type=list))
+
+    def set_removed_torch_models(self, removed_models: set[str]):
+        """Store the paths of the models the user removed from the list"""
+        if removed_models:
+            self.settings.setValue("segm/torch_model_files_removed",
+                                   sorted(removed_models))
+        else:
+            self.settings.remove("segm/torch_model_files_removed")
 
     @QtCore.pyqtSlot()
     def on_torch_model_info(self):
