@@ -515,6 +515,19 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_pause">
+         <property name="toolTip">
+          <string>Pause or resume the analysis</string>
+         </property>
+         <property name="text">
+          <string>Pause</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>

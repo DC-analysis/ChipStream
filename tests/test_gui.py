@@ -356,7 +356,7 @@ def test_gui_expert_kwargs_invalid(mw, monkeypatch):
     assert len(messages) == 1
     assert messages[0].count("Invalid keyword 'model_file' for 'thresh'")
     assert not mw.job_manager.is_busy()
-    assert mw.ui.widget_options.isEnabled()
+    assert mw.ui.pushButton_run.isEnabled()
 
 
 def test_gui_expert_kwargs_dialog(mw, monkeypatch):
@@ -418,10 +418,12 @@ def test_gui_segm_torch_models_sorted(mw, qtbot, monkeypatch, tmp_path):
     """The model list is sorted by name (case-insensitive, natural)"""
     path_model = retrieve_model(
         "segm-torch-model_unet-dcnum-test_g1_910c2.zip")
+    # dcnum requires the file name to end with the beginning of the MD5
+    # sum of the model file ("910c2.dcnm").
     names = ["model_10", "Model_2", "beta", "Alpha", "model_1"]
     paths = []
     for name in names:
-        pp = tmp_path / f"{name}.dcnm"
+        pp = tmp_path / f"{name}_910c2.dcnm"
         shutil.copy2(path_model, pp)
         paths.append(pp)
 
@@ -432,17 +434,58 @@ def test_gui_segm_torch_models_sorted(mw, qtbot, monkeypatch, tmp_path):
                 if cb.itemData(ii) is not None
                 and pathlib.Path(cb.itemData(ii)).parent == tmp_path]
 
-    expected = ["Alpha", "beta", "model_1", "Model_2", "model_10"]
-    # add the models one by one in unsorted order
-    for pp in paths:
-        monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileNames",
-                            lambda *args, pp=pp: ([str(pp)], ""))
-        qtbot.mouseClick(mw.ui.toolButton_torch_add,
-                         QtCore.Qt.MouseButton.LeftButton)
-    assert listed_names(mw) == expected
+    expected = [f"{name}_910c2" for name in
+                ["Alpha", "beta", "model_1", "Model_2", "model_10"]]
+    # Do not keep the temporary model directory in the user settings
+    key = "segm/torch_model_files"
+    model_dirs_orig = mw.settings.value(key, [], type=list)
+    try:
+        # add the models one by one in unsorted order
+        for pp in paths:
+            monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileNames",
+                                lambda *args, pp=pp: ([str(pp)], ""))
+            qtbot.mouseClick(mw.ui.toolButton_torch_add,
+                             QtCore.Qt.MouseButton.LeftButton)
+        assert listed_names(mw) == expected
 
-    # the list is also sorted in a new session
-    mw2 = ChipStream()
-    qtbot.addWidget(mw2)
-    assert listed_names(mw2) == expected
-    mw2.close()
+        # the list is also sorted in a new session
+        mw2 = ChipStream()
+        qtbot.addWidget(mw2)
+        assert listed_names(mw2) == expected
+        mw2.close()
+    finally:
+        mw.settings.setValue(key, model_dirs_orig)
+
+
+def test_gui_pause_button(mw, qtbot):
+    """The pause button is shown while running and pauses the jobs"""
+    path = retrieve_data(
+        "fmt-hdf5_cytoshot_full-features_legacy_allev_2023.zip")
+    mw.append_paths([path])
+    # do not depend on the models that other tests added
+    mw.ui.comboBox_segmenter.setCurrentIndex(
+        mw.ui.comboBox_segmenter.findData("thresh"))
+    assert not mw.ui.pushButton_pause.isVisibleTo(mw)
+    mw.on_run()
+    assert mw.ui.pushButton_pause.isVisibleTo(mw)
+    assert not mw.ui.pushButton_run.isEnabled()
+    assert not mw.ui.groupBox_4.isEnabled()
+
+    qtbot.mouseClick(mw.ui.pushButton_pause,
+                     QtCore.Qt.MouseButton.LeftButton)
+    try:
+        assert mw.job_manager.is_paused()
+        assert mw.ui.pushButton_pause.text() == "Resume"
+    finally:
+        qtbot.mouseClick(mw.ui.pushButton_pause,
+                         QtCore.Qt.MouseButton.LeftButton)
+    assert not mw.job_manager.is_paused()
+    assert mw.ui.pushButton_pause.text() == "Pause"
+
+    while mw.job_manager.is_busy():
+        time.sleep(.1)
+    qtbot.waitUntil(lambda: mw.ui.pushButton_run.isEnabled(), timeout=5000)
+    assert not mw.ui.pushButton_pause.isVisibleTo(mw)
+    assert mw.ui.groupBox_4.isEnabled()
+    assert path.with_name(path.stem + "_dcn.rtdc").exists(), \
+        mw.job_manager.get_info(0)

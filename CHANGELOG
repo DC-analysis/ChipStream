@@ -9,6 +9,7 @@
  - enh: show the system-wide CPU and RAM usage in the status bar (#1)
  - enh: expert settings (Settings menu) for additional keyword arguments of the pipeline steps in the GUI, with a warning in the status bar while they are active (#12)
  - enh: sort the list of segmentation models by name (case-insensitive, numbers by value)
+ - enh: pause button for pausing and resuming the analysis by suspending the worker processes (#9)
  - setup: bump dcnum to 0.31.3 (limit `index_mapping` to the dataset size)
  - ref: fix all ruff findings (also in tests and build-recipes)
  - ref: fix pyright findings in the CLI and in `detect_flickering` calls

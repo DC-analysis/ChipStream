@@ -5,6 +5,7 @@ import copy
 from functools import lru_cache
 import pathlib
 import threading
+import time
 import traceback
 import warnings
 
@@ -30,6 +31,12 @@ class ChipStreamJobManager:
         self._runner_list = []
         self._worker = None
         self.busy_lock = threading.Lock()
+        #: set while the jobs are paused
+        self._paused = threading.Event()
+        #: processes suspended while paused (PID -> psutil.Process)
+        self._suspended = {}
+        self._suspend_lock = threading.Lock()
+        self._suspender = None
 
     def __getitem__(self, index):
         runner = self.get_runner(index)
@@ -39,6 +46,10 @@ class ChipStreamJobManager:
                       }
         else:
             status = runner.get_status()
+            if (self.is_paused()
+                    and index == self.current_index
+                    and status["state"] not in ["done", "error"]):
+                status["state"] = "paused"
         status["path"] = str(self._path_in_list[index][0])
         return status
 
@@ -61,6 +72,8 @@ class ChipStreamJobManager:
         self._worker = None
 
     def close(self, force=True):
+        # Resume suspended processes, so that they can be stopped.
+        self.resume()
         if force:
             # Get the current process
             proc = psutil.Process()
@@ -86,6 +99,66 @@ class ChipStreamJobManager:
 
     def is_busy(self):
         return self.busy_lock.locked()
+
+    def is_paused(self):
+        """Whether the jobs are paused (see :meth:`pause`)"""
+        return self._paused.is_set()
+
+    def pause(self):
+        """Pause the jobs by suspending all child processes
+
+        All child processes of the current process (the worker
+        processes of dcnum) are suspended with :func:`psutil.Process.suspend`.
+        Since dcnum may start new processes while paused (e.g. while
+        starting the workers or for the next job), new child processes
+        are suspended in a background thread until :meth:`resume` is
+        called. Threads in the current process are not suspended; they
+        wait for the suspended processes.
+        """
+        with self._suspend_lock:
+            if self._paused.is_set():
+                return
+            self._paused.set()
+        self._suspend_children()
+        self._suspender = threading.Thread(target=self._suspend_loop,
+                                           name="ChipStreamSuspender",
+                                           daemon=True)
+        self._suspender.start()
+
+    def resume(self):
+        """Resume the jobs paused with :meth:`pause`"""
+        with self._suspend_lock:
+            self._paused.clear()
+            for proc in self._suspended.values():
+                try:
+                    proc.resume()
+                except (psutil.NoSuchProcess, psutil.ZombieProcess,
+                        psutil.AccessDenied):
+                    pass
+            self._suspended.clear()
+        if self._suspender is not None:
+            self._suspender.join()
+            self._suspender = None
+
+    def _suspend_children(self):
+        """Suspend all child processes that are not suspended yet"""
+        with self._suspend_lock:
+            if not self._paused.is_set():
+                return
+            for child in psutil.Process().children(recursive=True):
+                if child.pid not in self._suspended:
+                    try:
+                        child.suspend()
+                    except (psutil.NoSuchProcess, psutil.ZombieProcess,
+                            psutil.AccessDenied):
+                        continue
+                    self._suspended[child.pid] = child
+
+    def _suspend_loop(self):
+        """Suspend new child processes while paused"""
+        while self._paused.is_set():
+            self._suspend_children()
+            time.sleep(0.2)
 
     def join(self):
         if self._worker is not None and self._worker.is_alive():
