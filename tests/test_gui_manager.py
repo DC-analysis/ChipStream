@@ -119,10 +119,17 @@ def test_manager_pause_resume():
         assert mg.is_busy()
         assert mg[0]["state"] == "paused"
         progress = mg[0]["progress"]
-        children = psutil.Process().children(recursive=True)
-        assert children, "dcnum should have started worker processes"
-        for child in children:
-            assert child.status() == psutil.STATUS_STOPPED
+        statuses = []
+        for child in psutil.Process().children(recursive=True):
+            try:
+                statuses.append(child.status())
+            except psutil.NoSuchProcess:
+                continue
+        # Ignore zombie processes: They have exited already (e.g. worker
+        # processes of earlier tests that were not reaped yet on macOS).
+        statuses = [st for st in statuses if st != psutil.STATUS_ZOMBIE]
+        assert statuses, "dcnum should have started worker processes"
+        assert all(st == psutil.STATUS_STOPPED for st in statuses), statuses
         time.sleep(2)
         assert mg[0]["progress"] == progress
     finally:

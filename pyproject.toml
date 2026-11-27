@@ -37,7 +37,7 @@ dynamic = ["version"]
 [project.optional-dependencies]
 all = ["chipstream[cli,gui,torch]"]
 cli = ["click>=8.2"]
-gui = ["pyqt6"]
+gui = ["nvidia-ml-py", "pyqt6"]
 torch = ["torch>=2.2"]
 
 [project.scripts]

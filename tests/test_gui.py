@@ -1,7 +1,9 @@
 import pathlib
 import re
 import shutil
+import sys
 import time
+import types
 
 import dcnum.read
 import h5py
@@ -304,8 +306,81 @@ def test_gui_sys_usage(mw):
     assert label.timer.isActive()
     label.update_usage()
     text = label.text()
-    assert re.match(r"CPU \d+%   RAM \d+\.\d / \d+\.\d GiB \(\d+%\)$",
-                    text), text
+    # (the GPU usage is only shown if an NVIDIA GPU is available)
+    assert re.match(r"CPU \d+%   RAM \d+\.\d / \d+\.\d GiB \(\d+%\)"
+                    r"(   GPU.*)?$", text), text
+
+
+class FakeNVML:
+    """Fake `pynvml` module"""
+    class NVMLError(Exception):
+        pass
+
+    def __init__(self, num_gpus=1, fail=False, memory_v2=False):
+        self.num_gpus = num_gpus
+        self.fail = fail
+        if memory_v2:
+            self.nvmlMemory_v2 = 2
+
+    def nvmlInit(self):
+        pass
+
+    def nvmlDeviceGetCount(self):
+        return self.num_gpus
+
+    def nvmlDeviceGetHandleByIndex(self, index):
+        return index
+
+    def nvmlDeviceGetUtilizationRates(self, handle):
+        if self.fail:
+            raise self.NVMLError("GPU is lost")
+        return types.SimpleNamespace(gpu=45 + 10 * handle, memory=3)
+
+    def nvmlDeviceGetMemoryInfo(self, handle, version=None):
+        # version 2 does not count memory reserved by the driver as used
+        reserved = 0.5 if version == 2 else 0
+        return types.SimpleNamespace(
+            used=(2 + handle - reserved) * 1024**3,
+            total=4 * 1024**3,
+            free=(2 - handle) * 1024**3)
+
+
+@pytest.mark.parametrize("num_gpus,memory_v2,expected", [
+    [1, False, "   GPU 45% 2.0 / 4.0 GiB"],
+    [2, False, "   GPU0 45% 2.0 / 4.0 GiB   GPU1 55% 3.0 / 4.0 GiB"],
+    # memory info version 2 (as shown by `nvidia-smi`)
+    [1, True, "   GPU 45% 1.5 / 4.0 GiB"],
+])
+def test_gui_sys_usage_gpu(qtbot, monkeypatch, num_gpus, memory_v2, expected):
+    """The NVIDIA GPU usage is shown if available"""
+    from chipstream.gui import sys_usage
+    monkeypatch.setitem(sys.modules, "pynvml",
+                        FakeNVML(num_gpus=num_gpus, memory_v2=memory_v2))
+    label = sys_usage.SystemUsageLabel()
+    qtbot.addWidget(label)
+    assert label.text().endswith(expected), label.text()
+    assert label.text().startswith("CPU ")
+
+
+def test_gui_sys_usage_gpu_error(qtbot, monkeypatch):
+    """Errors when reading the GPU usage hide the GPU usage"""
+    from chipstream.gui import sys_usage
+    monkeypatch.setitem(sys.modules, "pynvml", FakeNVML(fail=True))
+    label = sys_usage.SystemUsageLabel()
+    qtbot.addWidget(label)
+    assert label.gpu_handles
+    assert "GPU" not in label.text()
+
+
+def test_gui_sys_usage_no_nvml(qtbot, monkeypatch):
+    """Without nvidia-ml-py, the GPU usage is not shown"""
+    from chipstream.gui import sys_usage
+    # `import pynvml` raises ImportError if the module entry is None
+    monkeypatch.setitem(sys.modules, "pynvml", None)
+    label = sys_usage.SystemUsageLabel()
+    qtbot.addWidget(label)
+    assert label.nvml is None
+    assert "GPU" not in label.text()
 
 
 def test_gui_expert_kwargs_job_kwargs(mw):
