@@ -1,3 +1,4 @@
+import os
 import pathlib
 import re
 import shutil
@@ -564,3 +565,15 @@ def test_gui_pause_button(mw, qtbot):
     assert mw.ui.groupBox_4.isEnabled()
     assert path.with_name(path.stem + "_dcn.rtdc").exists(), \
         mw.job_manager.get_info(0)
+
+
+def test_gui_splash_close_no_workaround(monkeypatch):
+    """The PyInstaller splash workaround (`_PYIBoot_SPLASH`) is not needed
+
+    Since PyInstaller 6.10, child processes started with multiprocessing
+    do not show the splash screen again (pyinstaller/pyinstaller#8634).
+    """
+    from chipstream.gui import splash
+    monkeypatch.delenv("_PYIBoot_SPLASH", raising=False)
+    splash.splash_close()
+    assert "_PYIBoot_SPLASH" not in os.environ
