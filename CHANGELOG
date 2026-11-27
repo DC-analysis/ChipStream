@@ -25,13 +25,16 @@
    bar (via nvidia-ml-py)
  - setup: bump dcnum to 0.31.3 (limit `index_mapping` to the dataset size)
  - setup: add `nvidia-ml-py` to the `gui` extra
- - build: remove the splash screen workaround (`_PYIBoot_SPLASH`) and require PyInstaller>=6.10 for Windows builds, which fixed the splash screen reappearing in child processes (#7)
+ - build: remove the splash screen workaround (`_PYIBoot_SPLASH`) and require
+   PyInstaller>=6.10 for Windows builds, which fixed the splash screen
+   reappearing in child processes (#7)
  - ref: fix all ruff findings (also in tests and build-recipes)
  - ref: fix pyright findings in the CLI and in `detect_flickering` calls
  - ref: fix pyright findings in the GUI; exclude the generated `*_ui.py`
    files from pyright
  - ref: move parsing of `KEY=VALUE` keyword arguments from the CLI to
    `chipstream.kwargs_parse` (no click dependency)
+ - setup: bump dcnum to 0.31.4
 0.11.1
  - enh: don't show rounded 100% in CLI progress
  - setup: bump dcnum to 0.31.2
