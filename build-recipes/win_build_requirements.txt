@@ -1,2 +1,2 @@
 # Any additional requirements for building the application
-pyinstaller>=4.7
+pyinstaller>=6.10
